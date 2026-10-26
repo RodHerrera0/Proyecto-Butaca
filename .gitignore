@@ -1,0 +1,32 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+dist-ssr/
+build/
+
+# Variables de entorno (solo se versiona .env.example)
+.env
+.env.*
+!.env.example
+
+# Pruebas y cobertura
+playwright-report/
+test-results/
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.sw?
