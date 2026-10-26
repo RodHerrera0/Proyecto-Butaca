@@ -24,11 +24,13 @@ _Por completar: cómo ejecutar `npm test` en cada carpeta y las pruebas E2E con 
 
 ## Equipo y roles
 
-- Rodrigo – Frontend
-- Michael – Backend (API y TMDB)
-- Guille – Backend (datos y sesión)
-- Julio – QA y DevOps
-- Luis – Documentación y apoyo
+| Integrante | Carnet | Rol |
+|---|---|---|
+| J. Rodrigo Herrera | 1042619 | Frontend |
+| Michael Gutiérrez | 1199723 | Backend (API y TMDB) |
+| Guillermo Contreras | 1154322 | Backend (datos y sesión) |
+| Julio Portillo | 1160822 | QA y DevOps |
+| Luis Samayoa | 1227421 | Documentación y apoyo |
 
 ## Flujo de trabajo con Git
 
