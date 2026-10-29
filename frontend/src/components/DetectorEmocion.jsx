@@ -1,6 +1,9 @@
+import { Camera, LoaderCircle, ScanFace, TriangleAlert, VideoOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cargarModelos, detectarEmocion } from '../lib/detector.js'
-import { EMOCIONES, formatearConfianza, traducirEmocion } from '../lib/emociones.js'
+import { EMOCIONES, MENSAJES_ANIMO, formatearConfianza } from '../lib/emociones.js'
+import ChipAnimo from './ChipAnimo.jsx'
+import './DetectorEmocion.css'
 
 const MENSAJES_ERROR = {
   permiso:
@@ -141,54 +144,85 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
   const camaraVisible = fase === 'lista' || fase === 'analizando'
 
   return (
-    <section className="detector">
+    <section className="cabina">
       {usarCamara && (
-        <video
-          ref={videoRef}
-          className="detector-video"
-          hidden={!camaraVisible}
-          autoPlay
-          muted
-          playsInline
-        />
+        <div className="cabina__pantalla" data-fase={fase}>
+          <video
+            ref={videoRef}
+            className="cabina__video"
+            hidden={!camaraVisible}
+            autoPlay
+            muted
+            playsInline
+          />
+          {!camaraVisible && (
+            <div className="cabina__telon">
+              {fase === 'cargando' ? (
+                <LoaderCircle className="cabina__girando" size={32} aria-hidden="true" />
+              ) : (
+                <VideoOff size={32} aria-hidden="true" />
+              )}
+              <p>{fase === 'cargando' ? 'Preparando la cámara y el detector…' : 'La cámara está apagada'}</p>
+            </div>
+          )}
+          {fase === 'analizando' && <div className="cabina__escaneo" aria-hidden="true" />}
+        </div>
       )}
 
-      {fase === 'cargando' && <p>Preparando la cámara y el detector…</p>}
-
-      {camaraVisible && (
-        <button type="button" data-testid="boton-analizar" onClick={analizar} disabled={fase === 'analizando'}>
-          {fase === 'analizando' ? 'Analizando…' : 'Analizar'}
-        </button>
+      {usarCamara && (
+        <div className="cabina__controles">
+          {camaraVisible && (
+            <button
+              type="button"
+              className="boton boton-primario cabina__analizar"
+              data-testid="boton-analizar"
+              onClick={analizar}
+              disabled={fase === 'analizando'}
+            >
+              <ScanFace size={20} aria-hidden="true" />
+              {fase === 'analizando' ? 'Analizando…' : 'Analizar'}
+            </button>
+          )}
+          {(fase === 'terminado' || fase === 'error') && (
+            <button type="button" className="boton boton-secundario" onClick={reintentar}>
+              <Camera size={18} aria-hidden="true" />
+              {fase === 'error' ? 'Intentar de nuevo' : 'Volver a usar la cámara'}
+            </button>
+          )}
+        </div>
       )}
 
       {error && (
-        <p className="detector-error" role="alert">
-          {MENSAJES_ERROR[error]} También puedes elegir tu ánimo a mano.
+        <p className="cabina__error" role="alert">
+          <TriangleAlert size={18} aria-hidden="true" />
+          <span>
+            {MENSAJES_ERROR[error]} También puedes elegir tu ánimo a mano.
+          </span>
         </p>
-      )}
-
-      {usarCamara && (fase === 'terminado' || fase === 'error') && (
-        <button type="button" onClick={reintentar}>
-          {fase === 'error' ? 'Intentar de nuevo' : 'Volver a usar la cámara'}
-        </button>
       )}
 
       {resultado && (
-        <p className="detector-resultado" data-testid="resultado-emocion">
-          {resultado.origen === 'camara'
-            ? `Emoción detectada: ${traducirEmocion(resultado.emocion)} (${formatearConfianza(resultado.confianza)})`
-            : `Ánimo elegido a mano: ${traducirEmocion(resultado.emocion)}`}
-        </p>
+        <div className="cabina__resultado" data-testid="resultado-emocion" role="status">
+          <p className="cabina__resultado-etiqueta">
+            {resultado.origen === 'camara' ? 'Emoción detectada' : 'Ánimo elegido a mano'}
+          </p>
+          <ChipAnimo emocion={resultado.emocion} tamano="grande">
+            {resultado.origen === 'camara' && (
+              <span className="cabina__confianza">{formatearConfianza(resultado.confianza)}</span>
+            )}
+          </ChipAnimo>
+          <p className="cabina__mensaje">{MENSAJES_ANIMO[resultado.emocion]}</p>
+        </div>
       )}
 
-      <label className="detector-manual">
-        Elegir mi ánimo a mano:{' '}
+      <label className="cabina__manual">
+        <span>Elegir mi ánimo a mano</span>
         <select
           data-testid="selector-animo-manual"
           value={resultado?.origen === 'manual' ? resultado.emocion : ''}
           onChange={elegirManual}
         >
-          <option value="">— Selecciona —</option>
+          <option value="">Selecciona cómo te sientes</option>
           {Object.entries(EMOCIONES).map(([clave, nombre]) => (
             <option key={clave} value={clave}>
               {nombre}

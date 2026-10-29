@@ -10,6 +10,17 @@ export const EMOCIONES = {
   surprised: 'Sorpresa',
 }
 
+// Mensaje cálido que acompaña al resultado en la cabina de detección.
+export const MENSAJES_ANIMO = {
+  neutral: 'Hoy te vemos con calma. Te encontramos algo para disfrutar sin prisa.',
+  happy: 'Parece que hoy estás feliz, te encontramos algo para seguir así.',
+  sad: 'Parece que hoy es un día gris. Tenemos historias que abrazan.',
+  angry: 'Parece que algo te molesta hoy. Va algo de acción para soltar la tensión.',
+  fearful: 'Parece que hoy algo te inquieta. Vamos con algo ligero y reconfortante.',
+  disgusted: 'Parece que algo no te cayó bien hoy. Te proponemos cambiar de aire.',
+  surprised: 'Parece que algo te sorprendió hoy. Sigamos con historias llenas de giros.',
+}
+
 export function traducirEmocion(clave) {
   return EMOCIONES[clave] ?? clave
 }

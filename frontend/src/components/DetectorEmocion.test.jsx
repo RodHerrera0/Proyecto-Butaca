@@ -40,7 +40,11 @@ describe('DetectorEmocion', () => {
     render(<ConEstado />)
     fireEvent.click(await screen.findByTestId('boton-analizar'))
 
-    expect((await screen.findByTestId('resultado-emocion')).textContent).toContain('Feliz (87%)')
+    const resultado = await screen.findByTestId('resultado-emocion')
+    expect(resultado.textContent).toContain('Emoción detectada')
+    expect(resultado.textContent).toContain('Feliz')
+    expect(resultado.textContent).toContain('87%')
+    expect(resultado.textContent).toContain('te encontramos algo para seguir así')
     expect(track.stop).toHaveBeenCalled()
     expect(screen.queryByTestId('boton-analizar')).toBeNull()
   })
@@ -65,7 +69,7 @@ describe('DetectorEmocion', () => {
 
     expect((await screen.findByRole('alert')).textContent).toContain('No diste permiso')
     fireEvent.change(screen.getByTestId('selector-animo-manual'), { target: { value: 'sad' } })
-    expect(screen.getByTestId('resultado-emocion').textContent).toContain('Ánimo elegido a mano: Triste')
+    expect(screen.getByTestId('resultado-emocion').textContent).toMatch(/Ánimo elegido a mano.*Triste/)
   })
 
   it('avisa si los modelos no cargan y no pide la cámara', async () => {
@@ -84,7 +88,7 @@ describe('DetectorEmocion', () => {
     expect(cargarModelos).not.toHaveBeenCalled()
     expect(screen.queryByTestId('boton-analizar')).toBeNull()
     fireEvent.change(screen.getByTestId('selector-animo-manual'), { target: { value: 'happy' } })
-    expect(screen.getByTestId('resultado-emocion').textContent).toContain('Ánimo elegido a mano: Feliz')
+    expect(screen.getByTestId('resultado-emocion').textContent).toMatch(/Ánimo elegido a mano.*Feliz/)
     expect(screen.queryByRole('button', { name: 'Volver a usar la cámara' })).toBeNull()
   })
 
