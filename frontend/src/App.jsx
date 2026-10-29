@@ -56,7 +56,7 @@ function App() {
           path="recomendaciones"
           element={<Recomendaciones animo={animo} favoritas={favoritas} onToggleFavorita={alternarFavorita} />}
         />
-        <Route path="favoritas" element={<Favoritas />} />
+        <Route path="favoritas" element={<Favoritas favoritas={favoritas} onToggleFavorita={alternarFavorita} />} />
         <Route path="tablero" element={<Tablero />} />
         <Route path="*" element={<NoEncontrada />} />
       </Route>

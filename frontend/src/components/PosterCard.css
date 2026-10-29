@@ -61,6 +61,12 @@
   color: var(--color-texto-suave);
 }
 
+.poster-card__pie {
+  margin-top: var(--espacio-1);
+  font-size: var(--texto-xs);
+  color: var(--color-texto-suave);
+}
+
 /* Escritorio con mouse: la información aparece sobre el póster */
 @media (hover: hover) and (pointer: fine) {
   .poster-card__info {

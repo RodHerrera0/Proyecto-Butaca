@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
@@ -71,5 +71,26 @@ describe('consentimiento', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('¿Cómo te sientes?')
     expect(screen.getByText(/Elegiste no usar la cámara/)).toBeTruthy()
     expect(getUserMedia).not.toHaveBeenCalled()
+  })
+})
+
+describe('favoritas', () => {
+  it('muestra el estado vacío cuando no hay nada guardado', () => {
+    renderEn('/favoritas')
+    expect(screen.getByText('Todavía no guardaste nada')).toBeTruthy()
+  })
+
+  it('lo que se marca en recomendaciones aparece en favoritas y se puede quitar', async () => {
+    renderEn('/recomendaciones')
+    const boton = await screen.findByRole('button', { name: 'Agregar a favoritas' })
+    const nombre = boton.closest('section').querySelector('h2').textContent
+    fireEvent.click(boton)
+
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Principal' })).getByRole('link', { name: 'Favoritas' }))
+    expect(screen.getByRole('heading', { level: 3, name: nombre })).toBeTruthy()
+    expect(screen.getByText(/Guardada el/)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: `Quitar ${nombre} de favoritas` }))
+    expect(screen.getByText('Todavía no guardaste nada')).toBeTruthy()
   })
 })

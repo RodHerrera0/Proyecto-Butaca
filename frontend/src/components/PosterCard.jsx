@@ -5,7 +5,8 @@ import './PosterCard.css'
 
 // Tarjeta de póster 2:3. En escritorio la información aparece al pasar el
 // mouse (o al enfocar con teclado); en pantallas táctiles va siempre debajo.
-export default function PosterCard({ titulo, esFavorita = false, onToggleFavorita }) {
+// `pie` permite agregar una línea extra (por ejemplo, la fecha en Favoritas).
+export default function PosterCard({ titulo, esFavorita = false, onToggleFavorita, pie }) {
   return (
     <article className="poster-card" data-testid="poster-card">
       <div className="poster-card__marco">
@@ -31,6 +32,7 @@ export default function PosterCard({ titulo, esFavorita = false, onToggleFavorit
           <span aria-hidden="true">·</span>
           <Calificacion valor={titulo.calificacion} />
         </p>
+        {pie && <p className="poster-card__pie">{pie}</p>}
       </div>
     </article>
   )
