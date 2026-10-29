@@ -30,13 +30,15 @@ function tipoErrorCamara(error) {
 }
 
 // Fases: 'cargando' (modelos y cámara) → 'lista' → 'analizando' → 'terminado' | 'error'
-export default function DetectorEmocion({ resultado, onResultado }) {
+// Sin `usarCamara` (no se aceptó el consentimiento) la fase es 'manual' y la
+// cámara nunca se enciende.
+export default function DetectorEmocion({ resultado, onResultado, usarCamara = false }) {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   // Cada intento de encender la cámara tiene un número; si cambia mientras
   // esperamos (por ejemplo, el componente se desmontó), se descarta ese stream.
   const intentoRef = useRef(0)
-  const [fase, setFase] = useState('cargando')
+  const [fase, setFase] = useState(usarCamara ? 'cargando' : 'manual')
   const [error, setError] = useState(null)
 
   const apagarCamara = useCallback(() => {
@@ -90,12 +92,13 @@ export default function DetectorEmocion({ resultado, onResultado }) {
   }, [])
 
   useEffect(() => {
+    if (!usarCamara) return
     encenderCamara()
     return () => {
       intentoRef.current++
       apagarCamara()
     }
-  }, [encenderCamara, apagarCamara])
+  }, [usarCamara, encenderCamara, apagarCamara])
 
   function reintentar() {
     setError(null)
@@ -131,7 +134,7 @@ export default function DetectorEmocion({ resultado, onResultado }) {
     intentoRef.current++
     apagarCamara()
     setError(null)
-    setFase('terminado')
+    setFase(usarCamara ? 'terminado' : 'manual')
     onResultado({ emocion, confianza: null, origen: 'manual' })
   }
 
@@ -139,14 +142,16 @@ export default function DetectorEmocion({ resultado, onResultado }) {
 
   return (
     <section className="detector">
-      <video
-        ref={videoRef}
-        className="detector-video"
-        hidden={!camaraVisible}
-        autoPlay
-        muted
-        playsInline
-      />
+      {usarCamara && (
+        <video
+          ref={videoRef}
+          className="detector-video"
+          hidden={!camaraVisible}
+          autoPlay
+          muted
+          playsInline
+        />
+      )}
 
       {fase === 'cargando' && <p>Preparando la cámara y el detector…</p>}
 
@@ -162,7 +167,7 @@ export default function DetectorEmocion({ resultado, onResultado }) {
         </p>
       )}
 
-      {(fase === 'terminado' || fase === 'error') && (
+      {usarCamara && (fase === 'terminado' || fase === 'error') && (
         <button type="button" onClick={reintentar}>
           {fase === 'error' ? 'Intentar de nuevo' : 'Volver a usar la cámara'}
         </button>

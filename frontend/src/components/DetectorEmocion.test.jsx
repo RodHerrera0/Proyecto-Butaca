@@ -11,7 +11,7 @@ vi.mock('../lib/detector.js', () => ({
 
 function ConEstado(props) {
   const [animo, setAnimo] = useState(null)
-  return <DetectorEmocion resultado={animo} onResultado={setAnimo} {...props} />
+  return <DetectorEmocion resultado={animo} onResultado={setAnimo} usarCamara {...props} />
 }
 
 function crearStreamFalso() {
@@ -75,6 +75,17 @@ describe('DetectorEmocion', () => {
 
     expect((await screen.findByRole('alert')).textContent).toContain('No se pudo cargar el detector')
     expect(getUserMedia).not.toHaveBeenCalled()
+  })
+
+  it('en modo manual no enciende la cámara ni carga los modelos', () => {
+    render(<ConEstado usarCamara={false} />)
+
+    expect(getUserMedia).not.toHaveBeenCalled()
+    expect(cargarModelos).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('boton-analizar')).toBeNull()
+    fireEvent.change(screen.getByTestId('selector-animo-manual'), { target: { value: 'happy' } })
+    expect(screen.getByTestId('resultado-emocion').textContent).toContain('Ánimo elegido a mano: Feliz')
+    expect(screen.queryByRole('button', { name: 'Volver a usar la cámara' })).toBeNull()
   })
 
   it('apaga la cámara al salir de la pantalla', async () => {

@@ -23,14 +23,19 @@ function Plantilla() {
 function App() {
   // Mientras no exista el backend, el resultado solo vive en el estado de la app.
   const [animo, setAnimo] = useState(null)
+  // null (aún no decide) | 'aceptado' | 'rechazado'. La cámara solo se enciende con 'aceptado'.
+  const [consentimiento, setConsentimiento] = useState(null)
 
   return (
     <Routes>
       <Route element={<Plantilla />}>
         <Route index element={<Navigate to="/login" replace />} />
         <Route path="login" element={<Login />} />
-        <Route path="consentimiento" element={<Consentimiento />} />
-        <Route path="detectar" element={<Deteccion animo={animo} onAnimo={setAnimo} />} />
+        <Route path="consentimiento" element={<Consentimiento onDecidir={setConsentimiento} />} />
+        <Route
+          path="detectar"
+          element={<Deteccion animo={animo} onAnimo={setAnimo} consentimiento={consentimiento} />}
+        />
         <Route path="recomendaciones" element={<Recomendaciones />} />
         <Route path="favoritas" element={<Favoritas />} />
         <Route path="tablero" element={<Tablero />} />
