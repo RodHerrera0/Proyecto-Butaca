@@ -1,0 +1,63 @@
+.chip-animo {
+  --chip-color: var(--color-dorado);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 36px;
+  padding: var(--espacio-1) var(--espacio-4);
+  border: 1px solid color-mix(in srgb, var(--chip-color) 40%, transparent);
+  border-radius: var(--radio-pildora);
+  background: color-mix(in srgb, var(--chip-color) 10%, var(--color-superficie));
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  transition:
+    background-color var(--duracion-media) var(--curva-suave),
+    border-color var(--duracion-media) var(--curva-suave),
+    box-shadow var(--duracion-media) var(--curva-suave);
+}
+
+button.chip-animo:hover {
+  background: color-mix(in srgb, var(--chip-color) 20%, var(--color-superficie));
+}
+
+.chip-animo[aria-pressed='true'] {
+  border-color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 26%, var(--color-superficie));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--chip-color) 30%, transparent);
+}
+
+.chip-animo__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  box-shadow: 0 0 8px var(--chip-color);
+  flex-shrink: 0;
+}
+
+.chip-animo--grande {
+  min-height: 56px;
+  padding: var(--espacio-2) var(--espacio-6);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  border-width: 2px;
+  border-color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 22%, var(--color-superficie));
+  box-shadow: 0 0 32px color-mix(in srgb, var(--chip-color) 30%, transparent);
+}
+
+.chip-animo--grande .chip-animo__punto {
+  width: 14px;
+  height: 14px;
+}
+
+.chip-animo[data-emocion='happy'] { --chip-color: var(--emocion-feliz); }
+.chip-animo[data-emocion='sad'] { --chip-color: var(--emocion-triste); }
+.chip-animo[data-emocion='angry'] { --chip-color: var(--emocion-enojado); }
+.chip-animo[data-emocion='fearful'] { --chip-color: var(--emocion-miedo); }
+.chip-animo[data-emocion='surprised'] { --chip-color: var(--emocion-sorpresa); }
+.chip-animo[data-emocion='disgusted'] { --chip-color: var(--emocion-asco); }
+.chip-animo[data-emocion='neutral'] { --chip-color: var(--emocion-neutral); }

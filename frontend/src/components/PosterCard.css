@@ -1,0 +1,110 @@
+.poster-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  min-width: 0;
+  transition: transform var(--duracion-media) var(--curva-suave);
+}
+
+.poster-card__marco {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  box-shadow: var(--sombra-2);
+  transition:
+    box-shadow var(--duracion-media) var(--curva-suave),
+    border-color var(--duracion-media) var(--curva-suave);
+}
+
+.poster-card__favorito {
+  position: absolute;
+  top: var(--espacio-2);
+  right: var(--espacio-2);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 50%;
+  background: var(--color-superficie-vidrio);
+  color: var(--color-texto);
+  backdrop-filter: blur(8px);
+  transition:
+    opacity var(--duracion-media) var(--curva-suave),
+    transform var(--duracion-rapida) var(--curva-suave),
+    background-color var(--duracion-media) var(--curva-suave);
+}
+
+.poster-card__favorito:active {
+  transform: scale(0.9);
+}
+
+.poster-card__titulo {
+  font-size: var(--texto-md);
+  font-weight: var(--peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poster-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+  font-size: var(--texto-sm);
+  color: var(--color-texto-suave);
+}
+
+/* Escritorio con mouse: la información aparece sobre el póster */
+@media (hover: hover) and (pointer: fine) {
+  .poster-card__info {
+    position: absolute;
+    inset: auto 0 0;
+    padding: var(--espacio-12) var(--espacio-3) var(--espacio-3);
+    border-radius: 0 0 var(--radio-lg) var(--radio-lg);
+    background: linear-gradient(180deg, transparent 0%, rgb(13 15 24 / 0.85) 45%, var(--color-fondo-profundo) 100%);
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity var(--duracion-media) var(--curva-suave),
+      transform var(--duracion-media) var(--curva-suave);
+    pointer-events: none;
+  }
+
+  .poster-card__favorito:not([aria-pressed='true']) {
+    opacity: 0;
+  }
+
+  .poster-card:hover,
+  .poster-card:focus-within {
+    transform: translateY(-6px) scale(1.04);
+    z-index: 2;
+  }
+
+  .poster-card:hover .poster-card__marco,
+  .poster-card:focus-within .poster-card__marco {
+    border-color: var(--color-dorado-brillo);
+    box-shadow: var(--sombra-3), 0 0 28px var(--color-dorado-tenue);
+  }
+
+  .poster-card:hover .poster-card__info,
+  .poster-card:focus-within .poster-card__info,
+  .poster-card:hover .poster-card__favorito,
+  .poster-card:focus-within .poster-card__favorito {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster-card:hover,
+  .poster-card:focus-within {
+    transform: none;
+  }
+}
