@@ -99,6 +99,14 @@
     box-shadow: var(--sombra-3), 0 0 28px var(--color-dorado-tenue);
   }
 
+  /* El texto del placeholder se oculta para no encimarse con la información */
+  .poster-card:hover .poster__titulo,
+  .poster-card:hover .poster__pie,
+  .poster-card:focus-within .poster__titulo,
+  .poster-card:focus-within .poster__pie {
+    opacity: 0;
+  }
+
   .poster-card:hover .poster-card__info,
   .poster-card:focus-within .poster-card__info,
   .poster-card:hover .poster-card__favorito,

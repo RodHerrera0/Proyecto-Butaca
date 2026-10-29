@@ -138,10 +138,6 @@
   margin-left: auto;
 }
 
-.header__cta + .menu-usuario {
-  margin-left: 0;
-}
-
 .menu-usuario__boton {
   display: inline-flex;
   align-items: center;

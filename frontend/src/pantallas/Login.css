@@ -19,8 +19,8 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: var(--espacio-4);
   transform: rotate(-6deg);
-  filter: blur(3px) saturate(110%);
-  opacity: 0.55;
+  filter: blur(2px) saturate(125%);
+  opacity: 0.9;
 }
 
 .login::after {
@@ -29,8 +29,8 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse at center, rgb(18 20 31 / 0.55) 0%, var(--color-fondo) 72%),
-    linear-gradient(180deg, rgb(18 20 31 / 0.4), var(--color-fondo));
+    radial-gradient(ellipse at center, rgb(18 20 31 / 0.35) 0%, rgb(18 20 31 / 0.75) 60%, var(--color-fondo) 95%),
+    linear-gradient(180deg, rgb(18 20 31 / 0.2), rgb(18 20 31 / 0.6));
 }
 
 .login__poster {
