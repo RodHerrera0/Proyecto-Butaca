@@ -1,0 +1,90 @@
+.consentimiento {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - var(--alto-header));
+}
+
+.consentimiento__tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-4);
+  width: 100%;
+  max-width: 560px;
+  padding: var(--espacio-10) clamp(var(--espacio-5), 5vw, var(--espacio-10));
+  text-align: center;
+  isolation: isolate;
+}
+
+/* Luz cálida de lámpara sobre la tarjeta */
+.consentimiento__tarjeta::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  width: 360px;
+  height: 220px;
+  transform: translateX(-50%);
+  background: var(--brillo-dorado);
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.consentimiento__logo {
+  color: var(--color-dorado);
+  filter: drop-shadow(0 0 10px var(--color-dorado-brillo));
+}
+
+.consentimiento__titulo {
+  font-size: var(--texto-2xl);
+}
+
+.consentimiento__intro {
+  color: var(--color-texto-suave);
+}
+
+.consentimiento__puntos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  margin: var(--espacio-2) 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.consentimiento__punto {
+  display: flex;
+  gap: var(--espacio-3);
+  color: var(--color-texto-suave);
+}
+
+.consentimiento__punto strong {
+  color: var(--color-texto);
+  font-weight: var(--peso-medio);
+}
+
+.consentimiento__icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radio-md);
+  background: var(--color-dorado-tenue);
+  color: var(--color-dorado);
+}
+
+.consentimiento__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-3);
+  width: 100%;
+}
+
+.consentimiento__acciones .boton {
+  flex: 1 1 160px;
+}
