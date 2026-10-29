@@ -1,0 +1,122 @@
+/*
+ * Tokens de diseño de Butaca: "una sala de cine de noche".
+ * Los componentes solo usan estas variables; no se escriben colores sueltos.
+ */
+:root {
+  /* Sala: fondos y superficies (nunca negro puro) */
+  --color-fondo: #12141f;
+  --color-fondo-profundo: #0d0f18;
+  --color-superficie: #1b1e2e;
+  --color-superficie-alta: #242840;
+  --color-superficie-vidrio: rgb(27 30 46 / 0.62);
+  --color-borde: rgb(163 168 191 / 0.16);
+  --color-borde-fuerte: rgb(163 168 191 / 0.32);
+
+  /* Texto (nunca blanco puro) */
+  --color-texto: #f3efe6;
+  --color-texto-suave: #a3a8bf;
+  --color-texto-sobre-dorado: #12141f;
+
+  /* Acentos */
+  --color-dorado: #f2b84b;
+  --color-dorado-claro: #f7cf7f;
+  --color-dorado-tenue: rgb(242 184 75 / 0.14);
+  --color-dorado-brillo: rgb(242 184 75 / 0.35);
+  --color-terciopelo: #c2475a;
+  --color-terciopelo-claro: #e8909d; /* para texto sobre fondo oscuro (contraste AA) */
+  --color-terciopelo-tenue: rgb(194 71 90 / 0.18);
+  --color-error: #f08a73;
+
+  /* Un color por emoción (chips, cabina y, más adelante, el tablero) */
+  --emocion-feliz: #f5d76e;
+  --emocion-triste: #6ea8fe;
+  --emocion-enojado: #f08a73;
+  --emocion-miedo: #a98bf0;
+  --emocion-sorpresa: #4fd1c5;
+  --emocion-asco: #a3b65a;
+  --emocion-neutral: #c9ccd6;
+
+  /* Pósters de placeholder: gradientes nocturnos */
+  --poster-1: linear-gradient(160deg, #3b2f63 0%, #1b1e2e 70%);
+  --poster-2: linear-gradient(160deg, #6b2d3e 0%, #1f1a2b 72%);
+  --poster-3: linear-gradient(160deg, #1f4e5f 0%, #151a2a 70%);
+  --poster-4: linear-gradient(160deg, #5c4a1f 0%, #1b1e2e 72%);
+  --poster-5: linear-gradient(160deg, #2b3f73 0%, #12141f 70%);
+  --poster-6: linear-gradient(160deg, #4a2c55 0%, #1b1e2e 70%);
+  --poster-7: linear-gradient(160deg, #2f4a3a 0%, #151a24 72%);
+  --poster-8: linear-gradient(160deg, #6a3b2a 0%, #1b1a26 72%);
+
+  /* Degradados de la sala */
+  --gradiente-fondo:
+    radial-gradient(1200px 600px at 15% -10%, rgb(242 184 75 / 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgb(194 71 90 / 0.06), transparent 60%),
+    linear-gradient(180deg, var(--color-fondo) 0%, var(--color-fondo-profundo) 100%);
+  --gradiente-dorado: linear-gradient(135deg, var(--color-dorado-claro) 0%, var(--color-dorado) 55%, #dc9a2e 100%);
+  --gradiente-hacia-fondo: linear-gradient(180deg, transparent 0%, rgb(18 20 31 / 0.55) 55%, var(--color-fondo) 100%);
+  --gradiente-lateral: linear-gradient(90deg, rgb(18 20 31 / 0.92) 0%, rgb(18 20 31 / 0.55) 45%, transparent 75%);
+  --brillo-dorado: radial-gradient(closest-side, var(--color-dorado-brillo), transparent);
+
+  /* Tipografía */
+  --fuente-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --fuente-cuerpo: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.875rem;
+  --texto-md: 1rem;
+  --texto-lg: 1.125rem;
+  --texto-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --texto-2xl: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --texto-3xl: clamp(2rem, 1.5rem + 2vw, 3rem);
+  --texto-4xl: clamp(2.4rem, 1.6rem + 3.4vw, 4.25rem);
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 700;
+  --interlineado: 1.55;
+  --interlineado-titulo: 1.08;
+
+  /* Espaciado (múltiplos de 4px) */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.25rem;
+  --espacio-6: 1.5rem;
+  --espacio-8: 2rem;
+  --espacio-10: 2.5rem;
+  --espacio-12: 3rem;
+  --espacio-16: 4rem;
+  --margen-pagina: clamp(1rem, 0.5rem + 2.5vw, 3rem);
+  --ancho-maximo: 1440px;
+  --ancho-lectura: 720px;
+
+  /* Radios */
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 16px;
+  --radio-xl: 24px;
+  --radio-pildora: 999px;
+
+  /* Sombras en capas */
+  --sombra-1: 0 1px 2px rgb(5 6 12 / 0.4), 0 2px 6px rgb(5 6 12 / 0.25);
+  --sombra-2: 0 2px 4px rgb(5 6 12 / 0.35), 0 8px 24px rgb(5 6 12 / 0.4);
+  --sombra-3: 0 4px 8px rgb(5 6 12 / 0.35), 0 18px 48px rgb(5 6 12 / 0.55);
+  --sombra-dorada: 0 0 0 1px rgb(242 184 75 / 0.35), 0 0 24px rgb(242 184 75 / 0.25);
+  --sombra-foco: 0 0 0 2px var(--color-fondo), 0 0 0 4px var(--color-dorado);
+
+  /* Movimiento */
+  --duracion-rapida: 150ms;
+  --duracion-media: 250ms;
+  --duracion-lenta: 450ms;
+  --curva-suave: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Estructura */
+  --alto-header: 76px;
+  --alto-bottom-nav: 68px;
+  --capa-header: 50;
+  --capa-menu: 60;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --alto-header: 64px;
+  }
+}

@@ -1,0 +1,91 @@
+/* El hero se extiende por debajo del encabezado translúcido */
+.recomendaciones {
+  margin-top: calc(var(--alto-header) * -1);
+}
+
+.recomendaciones__estado,
+.recomendaciones__cargando {
+  padding-top: calc(var(--alto-header) + var(--espacio-8));
+}
+
+.recomendaciones__filas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+  padding-top: var(--espacio-2);
+}
+
+.recomendaciones__filtros {
+  display: flex;
+  gap: var(--espacio-2);
+  margin: 0 calc(var(--margen-pagina) * -1);
+  padding: var(--espacio-1) var(--margen-pagina) var(--espacio-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.recomendaciones__filtros::-webkit-scrollbar {
+  display: none;
+}
+
+.recomendaciones__aviso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-3);
+  max-width: 520px;
+  margin: var(--espacio-8) auto;
+  padding: var(--espacio-10) var(--espacio-6);
+  text-align: center;
+}
+
+.recomendaciones__aviso p {
+  color: var(--color-texto-suave);
+}
+
+.recomendaciones__aviso h2 {
+  font-size: var(--texto-xl);
+}
+
+.recomendaciones__aviso-icono {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-dorado-tenue);
+  color: var(--color-dorado);
+  box-shadow: 0 0 32px var(--color-dorado-tenue);
+}
+
+.recomendaciones__cargando {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-10);
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding-left: var(--margen-pagina);
+  padding-right: var(--margen-pagina);
+  overflow: hidden;
+}
+
+.recomendaciones__hero-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  min-height: 260px;
+  justify-content: flex-end;
+}
+
+.recomendaciones__fila-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+}
+
+.recomendaciones__posters-skeleton {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(130px, 40vw, 190px);
+  gap: var(--espacio-4);
+}

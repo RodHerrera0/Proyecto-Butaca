@@ -1,0 +1,106 @@
+.carrusel {
+  --columnas: 2.3;
+  --separacion: var(--espacio-3);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.carrusel__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.carrusel__titulo {
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-fuerte);
+}
+
+.carrusel__flechas {
+  display: none;
+  gap: var(--espacio-2);
+}
+
+.carrusel__flecha {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 50%;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  transition:
+    background-color var(--duracion-media) var(--curva-suave),
+    border-color var(--duracion-media) var(--curva-suave),
+    opacity var(--duracion-media) var(--curva-suave);
+}
+
+.carrusel__flecha:hover:not(:disabled) {
+  border-color: var(--color-dorado);
+  color: var(--color-dorado);
+}
+
+.carrusel__flecha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.carrusel__pista {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - var(--separacion) * (var(--columnas) - 1)) / var(--columnas));
+  gap: var(--separacion);
+  margin: 0 calc(var(--margen-pagina) * -1);
+  padding: var(--espacio-3) var(--margen-pagina) var(--espacio-4);
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--margen-pagina);
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-superficie-alta) transparent;
+}
+
+.carrusel__item {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+@media (min-width: 600px) {
+  .carrusel {
+    --columnas: 3.4;
+    --separacion: var(--espacio-4);
+  }
+}
+
+@media (min-width: 900px) {
+  .carrusel {
+    --columnas: 4.5;
+  }
+}
+
+@media (min-width: 1200px) {
+  .carrusel {
+    --columnas: 6.3;
+    --separacion: var(--espacio-5);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .carrusel__flechas {
+    display: flex;
+  }
+
+  /* Espacio extra para que la tarjeta crezca al pasar el mouse sin recortarse */
+  .carrusel__pista {
+    padding-top: var(--espacio-4);
+    padding-bottom: var(--espacio-6);
+  }
+}

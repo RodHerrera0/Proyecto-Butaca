@@ -1,0 +1,75 @@
+.favoritas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+}
+
+.favoritas__cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--espacio-6) var(--espacio-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 900px) {
+  .favoritas__cuadricula {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+.favoritas__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-3);
+  max-width: 460px;
+  margin: var(--espacio-8) auto;
+  text-align: center;
+}
+
+.favoritas__vacio h2 {
+  font-size: var(--texto-2xl);
+}
+
+.favoritas__vacio p {
+  margin-bottom: var(--espacio-3);
+  color: var(--color-texto-suave);
+}
+
+.favoritas__ilustracion {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--espacio-3);
+  width: 260px;
+  height: 180px;
+  margin-bottom: var(--espacio-4);
+  padding-bottom: var(--espacio-4);
+  border-bottom: 2px solid var(--color-borde);
+}
+
+/* Cono de luz de un foco que cae sobre la butaca del centro */
+.favoritas__foco {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 180px;
+  height: 100%;
+  transform: translateX(-50%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--color-dorado-brillo), transparent 90%);
+  opacity: 0.7;
+}
+
+.favoritas__butaca {
+  position: relative;
+  color: var(--color-superficie-alta);
+}
+
+.favoritas__butaca--centro {
+  color: var(--color-terciopelo);
+  filter: drop-shadow(0 0 16px var(--color-terciopelo-tenue));
+}
