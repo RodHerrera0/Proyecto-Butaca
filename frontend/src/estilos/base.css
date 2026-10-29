@@ -192,3 +192,17 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* Página 404 */
+.no-encontrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-4);
+  padding-top: var(--espacio-16);
+  text-align: center;
+}
+
+.no-encontrada__logo {
+  color: var(--color-texto-suave);
+}
