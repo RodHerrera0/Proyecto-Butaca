@@ -1,0 +1,85 @@
+/* Igual que el inicio, el fondo pasa por debajo del encabezado */
+.login {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin-top: calc(var(--alto-header) * -1);
+  padding: calc(var(--alto-header) + var(--espacio-8)) var(--margen-pagina) var(--espacio-12);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Cuadrícula de pósters difuminada, ligeramente inclinada */
+.login__fondo {
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--espacio-4);
+  transform: rotate(-6deg);
+  filter: blur(3px) saturate(110%);
+  opacity: 0.55;
+}
+
+.login::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, rgb(18 20 31 / 0.55) 0%, var(--color-fondo) 72%),
+    linear-gradient(180deg, rgb(18 20 31 / 0.4), var(--color-fondo));
+}
+
+.login__poster {
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radio-md);
+}
+
+.login__tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-4);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--espacio-10) clamp(var(--espacio-5), 5vw, var(--espacio-10));
+  text-align: center;
+  background: var(--color-superficie-vidrio);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--sombra-3), 0 0 80px var(--color-dorado-tenue);
+}
+
+.login__logo {
+  color: var(--color-dorado);
+  filter: drop-shadow(0 0 12px var(--color-dorado-brillo));
+}
+
+.login__titulo {
+  font-size: var(--texto-2xl);
+}
+
+.login__texto {
+  color: var(--color-texto-suave);
+}
+
+.login__botones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  width: 100%;
+  margin-top: var(--espacio-2);
+}
+
+.login__nota {
+  font-size: var(--texto-sm);
+  color: var(--color-texto-suave);
+}
+
+.login__continuar {
+  font-weight: var(--peso-medio);
+}
