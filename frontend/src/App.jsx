@@ -31,6 +31,16 @@ function App() {
   const [animo, setAnimo] = useState(null)
   // null (aún no decide) | 'aceptado' | 'rechazado'. La cámara solo se enciende con 'aceptado'.
   const [consentimiento, setConsentimiento] = useState(null)
+  // Favoritas en memoria hasta que exista el backend (llevan la fecha en que se guardaron).
+  const [favoritas, setFavoritas] = useState([])
+
+  function alternarFavorita(titulo) {
+    setFavoritas((actuales) =>
+      actuales.some((t) => t.id === titulo.id)
+        ? actuales.filter((t) => t.id !== titulo.id)
+        : [...actuales, { ...titulo, guardadaEn: new Date().toISOString() }],
+    )
+  }
 
   return (
     <Routes>
@@ -42,7 +52,10 @@ function App() {
           path="detectar"
           element={<Deteccion animo={animo} onAnimo={setAnimo} consentimiento={consentimiento} />}
         />
-        <Route path="recomendaciones" element={<Recomendaciones />} />
+        <Route
+          path="recomendaciones"
+          element={<Recomendaciones animo={animo} favoritas={favoritas} onToggleFavorita={alternarFavorita} />}
+        />
         <Route path="favoritas" element={<Favoritas />} />
         <Route path="tablero" element={<Tablero />} />
         <Route path="*" element={<NoEncontrada />} />
