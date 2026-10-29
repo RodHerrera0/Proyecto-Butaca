@@ -1,0 +1,266 @@
+.header {
+  position: fixed;
+  inset: var(--espacio-3) var(--margen-pagina) auto;
+  z-index: var(--capa-header);
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+}
+
+.header__barra {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-4);
+  height: calc(var(--alto-header) - var(--espacio-3) * 2);
+  padding: 0 var(--espacio-3) 0 var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pildora);
+  background: var(--color-superficie-vidrio);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: var(--sombra-1);
+  transition:
+    background-color var(--duracion-lenta) var(--curva-suave),
+    box-shadow var(--duracion-lenta) var(--curva-suave);
+}
+
+.header--solido .header__barra {
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-3);
+}
+
+.header__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-texto);
+  text-decoration: none;
+  border-radius: var(--radio-md);
+}
+
+.header__logo-icono {
+  color: var(--color-dorado);
+  filter: drop-shadow(0 0 6px var(--color-dorado-brillo));
+}
+
+.header__nav {
+  display: flex;
+  gap: var(--espacio-2);
+  margin-left: var(--espacio-4);
+  flex: 1;
+}
+
+/* Links como boletos: píldora con muescas a los costados (talón de entrada) */
+.boleto {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 var(--espacio-5);
+  border-radius: var(--radio-md);
+  background: rgb(243 239 230 / 0.06);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  -webkit-mask:
+    radial-gradient(circle 6px at 0 50%, transparent 96%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, transparent 96%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 6px at 0 50%, transparent 96%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, transparent 96%, #000) right / 51% 100% no-repeat;
+  transition:
+    background-color var(--duracion-media) var(--curva-suave),
+    color var(--duracion-media) var(--curva-suave);
+}
+
+/* Línea punteada del talón */
+.boleto::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 9px;
+  border-right: 1px dashed currentColor;
+  opacity: 0.35;
+}
+
+.boleto:hover {
+  background: rgb(243 239 230 / 0.12);
+  color: var(--color-texto);
+}
+
+.boleto.active {
+  background: var(--gradiente-dorado);
+  color: var(--color-texto-sobre-dorado);
+}
+
+/* La máscara recorta el anillo de foco, así que se marca por dentro */
+.boleto:focus-visible {
+  box-shadow: none;
+  outline: 2px solid var(--color-texto);
+  outline-offset: -4px;
+}
+
+.header__cta {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brillo que cruza el botón de vez en cuando */
+.header__cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  animation: cta-brillo 5s ease-in-out infinite 1.5s;
+}
+
+.header__cta.active {
+  box-shadow: var(--sombra-dorada);
+}
+
+@keyframes cta-brillo {
+  0%,
+  70% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(120%) skewX(-20deg);
+  }
+}
+
+.menu-usuario {
+  position: relative;
+  margin-left: auto;
+}
+
+.header__cta + .menu-usuario {
+  margin-left: 0;
+}
+
+.menu-usuario__boton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  padding: var(--espacio-1);
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+}
+
+.menu-usuario__avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-superficie-alta);
+  border: 2px solid var(--color-dorado-brillo);
+  color: var(--color-dorado);
+}
+
+.menu-usuario__flecha {
+  color: var(--color-texto-suave);
+  transition: transform var(--duracion-media) var(--curva-suave);
+}
+
+.menu-usuario__boton[aria-expanded='true'] .menu-usuario__flecha {
+  transform: rotate(180deg);
+}
+
+.menu-usuario__panel {
+  position: absolute;
+  top: calc(100% + var(--espacio-3));
+  right: 0;
+  z-index: var(--capa-menu);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  width: 240px;
+  padding: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-3);
+  animation: menu-aparece var(--duracion-media) var(--curva-suave);
+}
+
+.menu-usuario__nombre {
+  padding: 0 var(--espacio-2);
+  font-weight: var(--peso-medio);
+}
+
+.menu-usuario__detalle {
+  padding: 0 var(--espacio-2) var(--espacio-2);
+  border-bottom: 1px solid var(--color-borde);
+  font-size: var(--texto-sm);
+  color: var(--color-texto-suave);
+}
+
+.menu-usuario__opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 40px;
+  padding: 0 var(--espacio-2);
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+  text-align: left;
+  text-decoration: none;
+}
+
+.menu-usuario__opcion:hover:not(:disabled) {
+  background: var(--color-superficie-alta);
+}
+
+.menu-usuario__opcion:disabled {
+  color: var(--color-texto-suave);
+  cursor: not-allowed;
+}
+
+@keyframes menu-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* Celular: solo logo y avatar; la navegación pasa a la barra inferior */
+@media (max-width: 767px) {
+  .header {
+    inset: var(--espacio-2) var(--espacio-3) auto;
+  }
+
+  .header__barra {
+    height: calc(var(--alto-header) - var(--espacio-2) * 2);
+    padding-left: var(--espacio-4);
+  }
+
+  .header__nav,
+  .header__cta {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header__nav {
+    margin-left: 0;
+  }
+
+  .boleto {
+    padding: 0 var(--espacio-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__cta::after {
+    display: none;
+  }
+}

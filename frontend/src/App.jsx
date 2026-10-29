@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import './App.css'
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
-import Encabezado from './components/Encabezado.jsx'
+import BottomNav from './components/BottomNav.jsx'
+import Header from './components/Header.jsx'
 import Consentimiento from './pantallas/Consentimiento.jsx'
 import Deteccion from './pantallas/Deteccion.jsx'
 import Favoritas from './pantallas/Favoritas.jsx'
@@ -11,12 +13,16 @@ import Tablero from './pantallas/Tablero.jsx'
 
 function Plantilla() {
   return (
-    <>
-      <Encabezado />
-      <main className="contenido">
+    <div className="app">
+      <a className="app__saltar" href="#contenido">
+        Saltar al contenido
+      </a>
+      <Header />
+      <main id="contenido" className="app__main">
         <Outlet />
       </main>
-    </>
+      <BottomNav />
+    </div>
   )
 }
 
