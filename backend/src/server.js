@@ -1,7 +1,8 @@
-import app from './app.js'
+import 'dotenv/config'
+import { app } from './app.js'
 
-const PORT = process.env.PORT || 3000
+const port = process.env.PORT || 3000
 
-app.listen(PORT, () => {
-  console.log(`API de Butaca escuchando en http://localhost:${PORT}`)
+app.listen(port, () => {
+  console.log(`Servidor en http://localhost:${port}`)
 })
