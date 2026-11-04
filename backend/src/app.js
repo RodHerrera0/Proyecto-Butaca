@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { requireAuth } from './middleware/auth.js'
 import { prisma } from './lib/prisma.js'
+import { favoritesRouter } from './routes/favorites.js'
 
 // Crea y configura la app de Express (sin levantar el servidor, para poder probarla con supertest)
 export const app = express()
@@ -24,6 +25,8 @@ app.get('/api/me', requireAuth, async (req, res) => {
   })
   res.json(user)
 })
+
+app.use('/api/favorites', favoritesRouter)
 
 app.use((err, req, res, next) => {
   console.error(err)
