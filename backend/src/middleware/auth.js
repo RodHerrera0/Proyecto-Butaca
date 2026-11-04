@@ -22,7 +22,7 @@ export async function requireAuth(req, res, next) {
 
   // Google y GitHub mandan nombre y foto con nombres distintos según el proveedor
   const meta = payload.user_metadata ?? {}
-  const name = meta.full_name ?? meta.name ?? undefined
+  const name = meta.full_name ?? meta.name ?? meta.user_name ?? undefined
   const avatarUrl = meta.avatar_url ?? meta.picture ?? undefined
 
   // Garantiza que el usuario exista en nuestra tabla antes de cualquier ruta protegida
