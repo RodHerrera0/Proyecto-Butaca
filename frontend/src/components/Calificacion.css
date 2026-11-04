@@ -1,0 +1,26 @@
+.calificacion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.calificacion__estrella {
+  fill: var(--color-dorado);
+  stroke: var(--color-dorado);
+  flex-shrink: 0;
+}
+
+.calificacion__estrella--vacia {
+  fill: none;
+  stroke: var(--color-texto-suave);
+}
+
+.calificacion--estrellas {
+  gap: 2px;
+}
+
+.calificacion__numero {
+  margin-left: var(--espacio-2);
+}

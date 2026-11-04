@@ -1,0 +1,65 @@
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .bottom-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: var(--capa-header);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: end;
+    height: calc(var(--alto-bottom-nav) + env(safe-area-inset-bottom));
+    padding: 0 var(--espacio-2) env(safe-area-inset-bottom);
+    border-top: 1px solid var(--color-borde);
+    background: var(--color-superficie-vidrio);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 -8px 24px rgb(5 6 12 / 0.35);
+  }
+}
+
+.bottom-nav__enlace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--alto-bottom-nav);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  transition: color var(--duracion-media) var(--curva-suave);
+}
+
+.bottom-nav__enlace.active {
+  color: var(--color-dorado);
+}
+
+.bottom-nav__icono {
+  display: grid;
+  place-items: center;
+}
+
+/* Botón central de detectar: círculo dorado que sobresale de la barra */
+.bottom-nav__enlace--destacado {
+  justify-content: flex-end;
+  padding-bottom: var(--espacio-2);
+}
+
+.bottom-nav__enlace--destacado .bottom-nav__icono {
+  width: 56px;
+  height: 56px;
+  margin-top: -22px;
+  border-radius: 50%;
+  background: var(--gradiente-dorado);
+  color: var(--color-texto-sobre-dorado);
+  box-shadow: var(--sombra-2), 0 0 20px var(--color-dorado-brillo);
+  border: 3px solid var(--color-fondo);
+}
+
+.bottom-nav__enlace--destacado.active .bottom-nav__icono {
+  box-shadow: var(--sombra-2), 0 0 28px var(--color-dorado);
+}
