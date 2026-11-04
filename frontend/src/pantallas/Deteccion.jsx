@@ -1,11 +1,22 @@
-import { ArrowRight, Info } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ArrowRight, FlaskConical, Info } from 'lucide-react'
+import { useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import DetectorEmocion from '../components/DetectorEmocion.jsx'
 import SelectorIntencion from '../components/SelectorIntencion.jsx'
+import { animoSimulado } from '../lib/simulacion.js'
 import './Deteccion.css'
 
 export default function Deteccion({ animo, onAnimo, consentimiento }) {
-  const usarCamara = consentimiento === 'aceptado'
+  const [parametros] = useSearchParams()
+  const simular = parametros.get('simular')
+  const simulado = animoSimulado(simular)
+  // Con una emoción simulada la cámara nunca se enciende
+  const usarCamara = consentimiento === 'aceptado' && !simulado
+
+  useEffect(() => {
+    const resultado = animoSimulado(simular)
+    if (resultado) onAnimo({ ...resultado, intencion: 'mantener' })
+  }, [simular, onAnimo])
 
   // Un nuevo resultado conserva lo que se eligió hacer con el ánimo
   function guardarResultado(resultado) {
@@ -25,7 +36,13 @@ export default function Deteccion({ animo, onAnimo, consentimiento }) {
         )}
       </header>
 
-      {consentimiento === 'rechazado' && (
+      {simulado && (
+        <p className="deteccion__aviso" data-testid="aviso-simulacion">
+          <FlaskConical size={18} aria-hidden="true" />
+          <span>Modo de prueba: el ánimo es simulado y la cámara no se usa.</span>
+        </p>
+      )}
+      {!simulado && consentimiento === 'rechazado' && (
         <p className="deteccion__aviso">
           <Info size={18} aria-hidden="true" />
           <span>
@@ -34,7 +51,7 @@ export default function Deteccion({ animo, onAnimo, consentimiento }) {
           </span>
         </p>
       )}
-      {!consentimiento && (
+      {!simulado && !consentimiento && (
         <p className="deteccion__aviso">
           <Info size={18} aria-hidden="true" />
           <span>

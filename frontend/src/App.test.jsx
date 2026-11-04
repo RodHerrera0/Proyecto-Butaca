@@ -115,3 +115,18 @@ describe('acompañar o cambiar el ánimo', () => {
     expect(screen.getByTestId('resumen-funcion').textContent).toContain('buscamos llevarte hacia feliz')
   })
 })
+
+describe('modo de emoción simulada (E2E)', () => {
+  it('/detectar?simular=happy da el ánimo sin encender la cámara', () => {
+    renderEn('/detectar?simular=happy')
+    expect(screen.getByTestId('aviso-simulacion')).toBeTruthy()
+    expect(screen.getByTestId('resultado-emocion').textContent).toContain('Feliz')
+    expect(getUserMedia).not.toHaveBeenCalled()
+  })
+
+  it('/detectar?simular=grupo da un grupo de 3 personas', () => {
+    renderEn('/detectar?simular=grupo')
+    expect(screen.getByTestId('resultado-emocion').textContent).toContain('3 personas')
+  })
+})
+
