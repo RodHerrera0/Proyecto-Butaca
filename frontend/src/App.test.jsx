@@ -44,6 +44,12 @@ describe('rutas', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Iniciar sesión')
   })
 
+  it('el login mantiene los data-testid acordados con QA', () => {
+    renderEn('/login')
+    expect(screen.getByTestId('boton-login-google')).toBeTruthy()
+    expect(screen.getByTestId('boton-login-github')).toBeTruthy()
+  })
+
   it('el encabezado muestra el nombre de la app en todas las pantallas', () => {
     renderEn('/tablero')
     expect(screen.getByRole('link', { name: 'Butaca' })).toBeTruthy()

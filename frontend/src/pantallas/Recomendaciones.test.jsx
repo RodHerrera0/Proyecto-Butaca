@@ -68,4 +68,23 @@ describe('Recomendaciones', () => {
     expect(await screen.findByRole('heading', { name: 'Para ver en grupo · Feliz' })).toBeTruthy()
     expect(screen.getByTestId('resumen-funcion').textContent).toContain('Función para 3 personas (2 Feliz, 1 Triste)')
   })
+
+  // Identificadores acordados con QA para las pruebas E2E: no cambiarlos sin avisar.
+  it('mantiene los data-testid de los estados y elementos clave', async () => {
+    const { unmount } = renderEn('/recomendaciones', { onToggleFavorita: vi.fn() })
+    expect(screen.getByTestId('estado-cargando')).toBeTruthy()
+    expect(await screen.findByTestId('destacado')).toBeTruthy()
+    expect(screen.getAllByTestId('poster-card').length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId('boton-favorito').length).toBeGreaterThan(0)
+    expect(screen.getByTestId('filtro-animo-happy')).toBeTruthy()
+    unmount()
+
+    renderEn('/recomendaciones?simular=error')
+    expect(await screen.findByTestId('estado-error')).toBeTruthy()
+  })
+
+  it('marca el estado vacío con su data-testid', async () => {
+    renderEn('/recomendaciones?simular=vacio')
+    expect(await screen.findByTestId('estado-vacio')).toBeTruthy()
+  })
 })

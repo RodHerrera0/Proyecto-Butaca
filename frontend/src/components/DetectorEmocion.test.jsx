@@ -138,4 +138,13 @@ describe('DetectorEmocion', () => {
 
     expect((await screen.findByRole('alert')).textContent).toContain('No detectamos un rostro')
   })
+
+  it('mantiene los data-testid de la cámara acordados con QA', async () => {
+    getUserMedia.mockRejectedValue(Object.assign(new Error('denegado'), { name: 'NotAllowedError' }))
+
+    render(<ConEstado />)
+    expect(screen.getByTestId('camara-video')).toBeTruthy()
+    expect(screen.getByTestId('camara-cargando')).toBeTruthy()
+    expect(await screen.findByTestId('estado-error')).toBeTruthy()
+  })
 })

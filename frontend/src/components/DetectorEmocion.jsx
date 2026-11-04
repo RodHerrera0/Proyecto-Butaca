@@ -191,6 +191,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
         <div className="cabina__pantalla" data-fase={fase}>
           <video
             ref={videoRef}
+            data-testid="camara-video"
             className="cabina__video"
             hidden={!camaraVisible}
             autoPlay
@@ -198,7 +199,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
             playsInline
           />
           {!camaraVisible && (
-            <div className="cabina__telon">
+            <div className="cabina__telon" data-testid={fase === 'cargando' ? 'camara-cargando' : 'camara-apagada'}>
               {fase === 'cargando' ? (
                 <LoaderCircle className="cabina__girando" size={32} aria-hidden="true" />
               ) : (
@@ -238,7 +239,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
       )}
 
       {error && (
-        <p className="cabina__error" role="alert">
+        <p className="cabina__error" role="alert" data-testid="estado-error">
           <TriangleAlert size={18} aria-hidden="true" />
           <span>
             {MENSAJES_ERROR[error]} También puedes elegir tu ánimo a mano.

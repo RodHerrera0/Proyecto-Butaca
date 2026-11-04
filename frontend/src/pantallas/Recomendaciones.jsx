@@ -50,7 +50,7 @@ function ResumenFuncion({ animo, objetivo }) {
 
 function CargandoRecomendaciones() {
   return (
-    <div className="recomendaciones__cargando" aria-busy="true">
+    <div className="recomendaciones__cargando" aria-busy="true" data-testid="estado-cargando">
       <p className="solo-lectores" role="status">
         Cargando recomendaciones…
       </p>
@@ -74,9 +74,9 @@ function CargandoRecomendaciones() {
   )
 }
 
-function Aviso({ Icono, titulo, children }) {
+function Aviso({ Icono, titulo, testId, children }) {
   return (
-    <div className="recomendaciones__aviso tarjeta" role="status">
+    <div className="recomendaciones__aviso tarjeta" role="status" data-testid={testId}>
       <span className="recomendaciones__aviso-icono" aria-hidden="true">
         <Icono size={32} />
       </span>
@@ -147,7 +147,7 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   } else if (estado === 'error') {
     contenido = (
       <div className="pagina recomendaciones__estado">
-        <Aviso Icono={CloudOff} titulo="Se nos fue la luz en la sala">
+        <Aviso Icono={CloudOff} titulo="Se nos fue la luz en la sala" testId="estado-error">
           <p>No pudimos cargar tus recomendaciones. Revisa tu conexión y vuelve a intentarlo.</p>
           <button type="button" className="boton boton-primario" onClick={reintentar}>
             <RefreshCw size={18} aria-hidden="true" /> Reintentar
@@ -158,7 +158,7 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   } else if (titulos.length === 0) {
     contenido = (
       <div className="pagina recomendaciones__estado">
-        <Aviso Icono={Popcorn} titulo="La cartelera está vacía por ahora">
+        <Aviso Icono={Popcorn} titulo="La cartelera está vacía por ahora" testId="estado-vacio">
           <p>Todavía no tenemos recomendaciones para ti. Cuéntanos cómo te sientes y armamos la función.</p>
           <Link to="/detectar" className="boton boton-primario">
             Detectar mi ánimo
@@ -184,13 +184,18 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
                 key={emocion}
                 emocion={emocion}
                 seleccionado={filtro === emocion}
+                testId={`filtro-animo-${emocion}`}
                 onClick={() => setFiltro(emocion)}
               />
             ))}
           </div>
 
           {filas.length === 0 ? (
-            <Aviso Icono={Popcorn} titulo={`Nada en cartelera para «${traducirEmocion(filtro)}»`}>
+            <Aviso
+              Icono={Popcorn}
+              titulo={`Nada en cartelera para «${traducirEmocion(filtro)}»`}
+              testId="estado-filtro-vacio"
+            >
               <p>Prueba con otro ánimo o mira todo lo que tenemos.</p>
               <button type="button" className="boton boton-secundario" onClick={() => setFiltro('todos')}>
                 Ver todos

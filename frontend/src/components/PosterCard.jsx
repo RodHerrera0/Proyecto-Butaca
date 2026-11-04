@@ -15,6 +15,7 @@ export default function PosterCard({ titulo, esFavorita = false, onToggleFavorit
           <button
             type="button"
             className="poster-card__favorito boton-favorito"
+            data-testid="boton-favorito"
             aria-pressed={esFavorita}
             aria-label={esFavorita ? `Quitar ${titulo.titulo} de favoritas` : `Agregar ${titulo.titulo} a favoritas`}
             onClick={() => onToggleFavorita(titulo)}
