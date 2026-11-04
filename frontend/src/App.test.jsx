@@ -6,6 +6,8 @@ import App from './App.jsx'
 vi.mock('./lib/detector.js', () => ({
   cargarModelos: vi.fn(() => Promise.resolve({})),
   detectarEmocion: vi.fn(),
+  detectarAnimosGrupo: vi.fn(),
+  MAXIMO_PERSONAS: 6,
 }))
 
 function renderEn(ruta) {
@@ -40,6 +42,12 @@ describe('rutas', () => {
   it('/ redirige a /login', () => {
     renderEn('/')
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Iniciar sesión')
+  })
+
+  it('el login mantiene los data-testid acordados con QA', () => {
+    renderEn('/login')
+    expect(screen.getByTestId('boton-login-google')).toBeTruthy()
+    expect(screen.getByTestId('boton-login-github')).toBeTruthy()
   })
 
   it('el encabezado muestra el nombre de la app en todas las pantallas', () => {
@@ -94,3 +102,31 @@ describe('favoritas', () => {
     expect(screen.getByText('Todavía no guardaste nada')).toBeTruthy()
   })
 })
+
+describe('acompañar o cambiar el ánimo', () => {
+  it('elegir "Cambiarlo" muestra la ruta y cambia las recomendaciones', async () => {
+    renderEn('/detectar')
+    fireEvent.change(screen.getByTestId('selector-animo-manual'), { target: { value: 'sad' } })
+    fireEvent.click(screen.getByTestId('intencion-cambiar'))
+    expect(screen.getByTestId('ruta-animo').textContent).toMatch(/Triste.*Feliz/)
+
+    fireEvent.click(screen.getByRole('link', { name: /Ver recomendaciones/ }))
+    expect(await screen.findByRole('heading', { name: 'Para cambiarte el ánimo · Feliz' })).toBeTruthy()
+    expect(screen.getByTestId('resumen-funcion').textContent).toContain('buscamos llevarte hacia feliz')
+  })
+})
+
+describe('modo de emoción simulada (E2E)', () => {
+  it('/detectar?simular=happy da el ánimo sin encender la cámara', () => {
+    renderEn('/detectar?simular=happy')
+    expect(screen.getByTestId('aviso-simulacion')).toBeTruthy()
+    expect(screen.getByTestId('resultado-emocion').textContent).toContain('Feliz')
+    expect(getUserMedia).not.toHaveBeenCalled()
+  })
+
+  it('/detectar?simular=grupo da un grupo de 3 personas', () => {
+    renderEn('/detectar?simular=grupo')
+    expect(screen.getByTestId('resultado-emocion').textContent).toContain('3 personas')
+  })
+})
+

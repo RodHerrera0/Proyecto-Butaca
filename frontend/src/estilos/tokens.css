@@ -1,8 +1,14 @@
 /*
  * Tokens de diseño de Butaca: "una sala de cine de noche".
  * Los componentes solo usan estas variables; no se escriben colores sueltos.
+ *
+ * Hay dos temas: oscuro (por defecto, en :root) y claro ([data-tema='claro']).
+ * El atributo lo pone un script en index.html antes de pintar, según la
+ * preferencia guardada o la del sistema (ver src/lib/tema.js).
  */
 :root {
+  color-scheme: dark;
+
   /* Sala: fondos y superficies (nunca negro puro) */
   --color-fondo: #12141f;
   --color-fondo-profundo: #0d0f18;
@@ -16,12 +22,16 @@
   --color-texto: #f3efe6;
   --color-texto-suave: #a3a8bf;
   --color-texto-sobre-dorado: #12141f;
+  --color-texto-poster: #f3efe6; /* los pósters son oscuros en ambos temas */
 
   /* Acentos */
   --color-dorado: #f2b84b;
   --color-dorado-claro: #f7cf7f;
   --color-dorado-tenue: rgb(242 184 75 / 0.14);
   --color-dorado-brillo: rgb(242 184 75 / 0.35);
+  --color-dorado-texto: var(--color-dorado); /* dorado para texto e íconos */
+  --color-estrella: var(--color-dorado);
+  --color-foco: var(--color-dorado);
   --color-terciopelo: #c2475a;
   --color-terciopelo-claro: #e8909d; /* para texto sobre fondo oscuro (contraste AA) */
   --color-terciopelo-tenue: rgb(194 71 90 / 0.18);
@@ -52,9 +62,25 @@
     radial-gradient(900px 500px at 100% 0%, rgb(194 71 90 / 0.06), transparent 60%),
     linear-gradient(180deg, var(--color-fondo) 0%, var(--color-fondo-profundo) 100%);
   --gradiente-dorado: linear-gradient(135deg, var(--color-dorado-claro) 0%, var(--color-dorado) 55%, #dc9a2e 100%);
-  --gradiente-hacia-fondo: linear-gradient(180deg, transparent 0%, rgb(18 20 31 / 0.55) 55%, var(--color-fondo) 100%);
-  --gradiente-lateral: linear-gradient(90deg, rgb(18 20 31 / 0.92) 0%, rgb(18 20 31 / 0.55) 45%, transparent 75%);
+  --gradiente-hacia-fondo: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-fondo) 55%, transparent) 55%,
+    var(--color-fondo) 100%
+  );
+  --gradiente-lateral: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-fondo) 92%, transparent) 0%,
+    color-mix(in srgb, var(--color-fondo) 55%, transparent) 45%,
+    transparent 75%
+  );
   --brillo-dorado: radial-gradient(closest-side, var(--color-dorado-brillo), transparent);
+  --brillo-cta: rgb(255 255 255 / 0.45);
+
+  /* Velos: capas translúcidas del color del texto (botones, boletos, brillos) */
+  --color-velo-1: color-mix(in srgb, var(--color-texto) 6%, transparent);
+  --color-velo-2: color-mix(in srgb, var(--color-texto) 10%, transparent);
+  --color-velo-3: color-mix(in srgb, var(--color-texto) 14%, transparent);
 
   /* Tipografía */
   --fuente-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
@@ -100,7 +126,12 @@
   --sombra-2: 0 2px 4px rgb(5 6 12 / 0.35), 0 8px 24px rgb(5 6 12 / 0.4);
   --sombra-3: 0 4px 8px rgb(5 6 12 / 0.35), 0 18px 48px rgb(5 6 12 / 0.55);
   --sombra-dorada: 0 0 0 1px rgb(242 184 75 / 0.35), 0 0 24px rgb(242 184 75 / 0.25);
-  --sombra-foco: 0 0 0 2px var(--color-fondo), 0 0 0 4px var(--color-dorado);
+  --sombra-foco: 0 0 0 2px var(--color-fondo), 0 0 0 4px var(--color-foco);
+  --sombra-texto: 0 4px 24px rgb(5 6 12 / 0.5);
+  --sombra-barra-inferior: 0 -8px 24px rgb(5 6 12 / 0.35);
+  /* Sobre los pósters (siempre oscuros) */
+  --sombra-texto-poster: 0 2px 12px rgb(5 6 12 / 0.6);
+  --vineta-poster: inset 0 0 60px rgb(5 6 12 / 0.6);
 
   /* Movimiento */
   --duracion-rapida: 150ms;
@@ -115,8 +146,61 @@
   --capa-menu: 60;
 }
 
+/* Tema claro: "la sala con las luces encendidas". Marfil cálido, nunca blanco
+   puro, y el dorado se oscurece cuando es texto para mantener contraste AA. */
+:root[data-tema='claro'] {
+  color-scheme: light;
+
+  --color-fondo: #f5f1e8;
+  --color-fondo-profundo: #ebe4d6;
+  --color-superficie: #fffcf5;
+  --color-superficie-alta: #fffdf9;
+  --color-superficie-vidrio: rgb(255 252 245 / 0.75);
+  --color-borde: rgb(27 30 46 / 0.12);
+  --color-borde-fuerte: rgb(27 30 46 / 0.24);
+
+  --color-texto: #1b1e2e;
+  --color-texto-suave: #545a70;
+
+  --color-dorado-tenue: rgb(242 184 75 / 0.2);
+  --color-dorado-brillo: rgb(242 184 75 / 0.45);
+  --color-dorado-texto: #855600;
+  --color-estrella: #e0a21f;
+  --color-foco: #855600;
+  --color-terciopelo: #b23a4e;
+  --color-terciopelo-claro: #a3324a;
+  --color-terciopelo-tenue: rgb(178 58 78 / 0.12);
+  --color-error: #b5452b;
+
+  --emocion-feliz: #d9a400;
+  --emocion-triste: #2f6fd6;
+  --emocion-enojado: #d9573b;
+  --emocion-miedo: #7b5bd6;
+  --emocion-sorpresa: #1a9a8e;
+  --emocion-asco: #7a8b2e;
+  --emocion-neutral: #868b9f;
+
+  --gradiente-fondo:
+    radial-gradient(1200px 600px at 15% -10%, rgb(242 184 75 / 0.16), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgb(194 71 90 / 0.07), transparent 60%),
+    linear-gradient(180deg, var(--color-fondo) 0%, var(--color-fondo-profundo) 100%);
+
+  --sombra-1: 0 1px 2px rgb(70 52 24 / 0.08), 0 2px 6px rgb(70 52 24 / 0.06);
+  --sombra-2: 0 2px 4px rgb(70 52 24 / 0.08), 0 8px 24px rgb(70 52 24 / 0.1);
+  --sombra-3: 0 4px 8px rgb(70 52 24 / 0.08), 0 18px 48px rgb(70 52 24 / 0.16);
+  --sombra-texto: none;
+  --sombra-barra-inferior: 0 -6px 20px rgb(70 52 24 / 0.1);
+}
+
 @media (max-width: 767px) {
   :root {
     --alto-header: 64px;
+  }
+}
+
+/* Celular horizontal: la barra inferior se vuelve compacta */
+@media (max-width: 767px) and (max-height: 480px) {
+  :root {
+    --alto-bottom-nav: 50px;
   }
 }

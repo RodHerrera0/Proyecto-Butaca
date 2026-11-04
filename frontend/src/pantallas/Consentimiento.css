@@ -2,6 +2,7 @@
   display: grid;
   place-items: center;
   min-height: calc(100vh - var(--alto-header));
+  min-height: calc(100dvh - var(--alto-header));
 }
 
 .consentimiento__tarjeta {
@@ -33,7 +34,7 @@
 }
 
 .consentimiento__logo {
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
   filter: drop-shadow(0 0 10px var(--color-dorado-brillo));
 }
 
@@ -74,7 +75,7 @@
   height: 40px;
   border-radius: var(--radio-md);
   background: var(--color-dorado-tenue);
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
 }
 
 .consentimiento__acciones {

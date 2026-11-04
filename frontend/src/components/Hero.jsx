@@ -12,7 +12,7 @@ export default function Hero({ titulo, etiqueta = 'Destacado para tu ánimo', es
   const idDetalles = useId()
 
   return (
-    <section className="hero" aria-labelledby={idTitulo}>
+    <section className="hero" aria-labelledby={idTitulo} data-testid="destacado">
       <div className="hero__fondo" aria-hidden="true">
         {titulo.fondo ? (
           <img src={titulo.fondo} alt="" />
@@ -47,6 +47,7 @@ export default function Hero({ titulo, etiqueta = 'Destacado para tu ánimo', es
               <button
                 type="button"
                 className="boton boton-primario boton-favorito"
+                data-testid="boton-favorito"
                 aria-pressed={esFavorita}
                 onClick={() => onToggleFavorita(titulo)}
               >

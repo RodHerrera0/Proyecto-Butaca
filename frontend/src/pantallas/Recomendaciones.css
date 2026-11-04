@@ -54,7 +54,7 @@
   height: 64px;
   border-radius: 50%;
   background: var(--color-dorado-tenue);
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
   box-shadow: 0 0 32px var(--color-dorado-tenue);
 }
 
@@ -88,4 +88,23 @@
   grid-auto-flow: column;
   grid-auto-columns: clamp(130px, 40vw, 190px);
   gap: var(--espacio-4);
+}
+
+.recomendaciones__funcion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  align-self: flex-start;
+  max-width: 100%;
+  padding: var(--espacio-2) var(--espacio-4);
+  border: 1px dashed var(--color-dorado-brillo);
+  border-radius: var(--radio-md);
+  background: var(--color-dorado-tenue);
+  font-size: var(--texto-sm);
+}
+
+.recomendaciones__funcion svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-dorado-texto);
 }

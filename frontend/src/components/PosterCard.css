@@ -74,7 +74,7 @@
     inset: auto 0 0;
     padding: var(--espacio-12) var(--espacio-3) var(--espacio-3);
     border-radius: 0 0 var(--radio-lg) var(--radio-lg);
-    background: linear-gradient(180deg, transparent 0%, rgb(13 15 24 / 0.85) 45%, var(--color-fondo-profundo) 100%);
+    background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--color-fondo-profundo) 85%, transparent) 45%, var(--color-fondo-profundo) 100%);
     opacity: 0;
     transform: translateY(8px);
     transition:

@@ -16,7 +16,7 @@
     background: var(--color-superficie-vidrio);
     backdrop-filter: blur(16px) saturate(140%);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
-    box-shadow: 0 -8px 24px rgb(5 6 12 / 0.35);
+    box-shadow: var(--sombra-barra-inferior);
   }
 }
 
@@ -35,7 +35,7 @@
 }
 
 .bottom-nav__enlace.active {
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
 }
 
 .bottom-nav__icono {
@@ -62,4 +62,27 @@
 
 .bottom-nav__enlace--destacado.active .bottom-nav__icono {
   box-shadow: var(--sombra-2), 0 0 28px var(--color-dorado);
+}
+
+/* Celular horizontal: solo íconos (el texto queda para lectores de pantalla) */
+@media (max-width: 767px) and (max-height: 480px) {
+  .bottom-nav__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .bottom-nav__enlace--destacado {
+    justify-content: center;
+    padding-bottom: 0;
+  }
+
+  .bottom-nav__enlace--destacado .bottom-nav__icono {
+    width: 46px;
+    height: 46px;
+    margin-top: -14px;
+  }
 }

@@ -27,10 +27,10 @@ export default function Login() {
         <p className="login__texto">Tu butaca te espera. Entra para guardar tus favoritas y ver tu ánimo en el tiempo.</p>
         {/* Placeholder: el login real con Supabase es otra tarea. */}
         <div className="login__botones">
-          <button type="button" className="boton boton-secundario" disabled>
+          <button type="button" className="boton boton-secundario" disabled data-testid="boton-login-google">
             <LogIn size={18} aria-hidden="true" /> Entrar con Google
           </button>
-          <button type="button" className="boton boton-secundario" disabled>
+          <button type="button" className="boton boton-secundario" disabled data-testid="boton-login-github">
             <LogIn size={18} aria-hidden="true" /> Entrar con GitHub
           </button>
         </div>
