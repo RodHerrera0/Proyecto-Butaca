@@ -9,9 +9,11 @@
 /* Pantalla de cine: marco oscuro con borde iluminado suave */
 .cabina__pantalla {
   position: relative;
-  width: 100%;
+  /* El ancho depende también del alto de la ventana, para que "Analizar"
+     quede a la vista sin hacer scroll en laptops bajas. */
+  width: min(100%, 640px, max(240px, (100vh - 380px) * 4 / 3));
+  width: min(100%, 640px, max(240px, (100dvh - 380px) * 4 / 3));
   aspect-ratio: 4 / 3;
-  max-width: 640px;
   overflow: hidden;
   border-radius: var(--radio-xl);
   border: 2px solid var(--color-dorado-brillo);
@@ -55,7 +57,7 @@
 }
 
 .cabina__telon svg {
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
 }
 
 .cabina__girando {
@@ -124,7 +126,7 @@
   margin-left: var(--espacio-1);
   padding: 2px var(--espacio-2);
   border-radius: var(--radio-pildora);
-  background: rgb(243 239 230 / 0.12);
+  background: var(--color-velo-3);
   font-family: var(--fuente-cuerpo);
   font-size: var(--texto-sm);
   font-variant-numeric: tabular-nums;

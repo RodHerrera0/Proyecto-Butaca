@@ -42,7 +42,7 @@
 
 .carrusel__flecha:hover:not(:disabled) {
   border-color: var(--color-dorado);
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
 }
 
 .carrusel__flecha:disabled {

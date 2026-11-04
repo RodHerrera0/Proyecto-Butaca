@@ -54,7 +54,7 @@
   height: 64px;
   border-radius: 50%;
   background: var(--color-dorado-tenue);
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
   box-shadow: 0 0 32px var(--color-dorado-tenue);
 }
 

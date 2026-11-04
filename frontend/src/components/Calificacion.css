@@ -7,8 +7,8 @@
 }
 
 .calificacion__estrella {
-  fill: var(--color-dorado);
-  stroke: var(--color-dorado);
+  fill: var(--color-estrella);
+  stroke: var(--color-estrella);
   flex-shrink: 0;
 }
 

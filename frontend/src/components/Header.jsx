@@ -1,6 +1,7 @@
-import { ChevronDown, LogIn, LogOut, Sparkles, User } from 'lucide-react'
+import { ChevronDown, LogIn, LogOut, Moon, Sparkles, Sun, User } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useTema } from '../lib/tema.js'
 import LogoButaca from './LogoButaca.jsx'
 import './Header.css'
 
@@ -68,6 +69,17 @@ function MenuUsuario() {
   )
 }
 
+function BotonTema() {
+  const { tema, alternarTema } = useTema()
+  const etiqueta = tema === 'oscuro' ? 'Activar modo claro' : 'Activar modo oscuro'
+
+  return (
+    <button type="button" className="boton-tema" aria-label={etiqueta} title={etiqueta} onClick={alternarTema}>
+      {tema === 'oscuro' ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+    </button>
+  )
+}
+
 export default function Header() {
   const [solido, setSolido] = useState(false)
 
@@ -101,7 +113,10 @@ export default function Header() {
           ¿Qué veo hoy?
         </NavLink>
 
-        <MenuUsuario />
+        <div className="header__acciones">
+          <BotonTema />
+          <MenuUsuario />
+        </div>
       </div>
     </header>
   )
