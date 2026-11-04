@@ -20,11 +20,16 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Token inválido' })
   }
 
+  // Google y GitHub mandan nombre y foto con nombres distintos según el proveedor
+  const meta = payload.user_metadata ?? {}
+  const name = meta.full_name ?? meta.name ?? undefined
+  const avatarUrl = meta.avatar_url ?? meta.picture ?? undefined
+
   // Garantiza que el usuario exista en nuestra tabla antes de cualquier ruta protegida
   req.user = await prisma.user.upsert({
     where: { authId: payload.sub },
-    update: { email: payload.email },
-    create: { authId: payload.sub, email: payload.email },
+    update: { email: payload.email, name, avatarUrl },
+    create: { authId: payload.sub, email: payload.email, name, avatarUrl },
   })
   req.auth = { id: payload.sub, email: payload.email }
   next()
