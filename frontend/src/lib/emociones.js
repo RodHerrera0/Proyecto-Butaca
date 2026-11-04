@@ -44,3 +44,23 @@ export function emocionDominante(expresiones) {
 export function formatearConfianza(confianza) {
   return `${Math.round(confianza * 100)}%`
 }
+
+// "Cambiar el ánimo": hacia qué emoción apuntan las recomendaciones cuando la
+// persona no quiere quedarse como está. Se inspira en la regulación emocional:
+// de la tristeza o el miedo a algo alegre, del enojo a la calma, etc.
+export const EMOCION_PARA_CAMBIAR = {
+  neutral: 'surprised',
+  happy: 'surprised',
+  sad: 'happy',
+  angry: 'neutral',
+  fearful: 'happy',
+  disgusted: 'happy',
+  surprised: 'neutral',
+}
+
+// Emoción con la que se filtran las recomendaciones según lo que se quiera
+// hacer con el ánimo: 'mantener' (acompañarlo) o 'cambiar'.
+export function emocionObjetivo(emocion, intencion = 'mantener') {
+  if (intencion === 'cambiar') return EMOCION_PARA_CAMBIAR[emocion] ?? emocion
+  return emocion
+}

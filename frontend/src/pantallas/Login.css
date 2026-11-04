@@ -4,6 +4,7 @@
   display: grid;
   place-items: center;
   min-height: 100vh;
+  min-height: 100dvh;
   margin-top: calc(var(--alto-header) * -1);
   padding: calc(var(--alto-header) + var(--espacio-8)) var(--margen-pagina) var(--espacio-12);
   overflow: hidden;
@@ -29,8 +30,17 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse at center, rgb(18 20 31 / 0.35) 0%, rgb(18 20 31 / 0.75) 60%, var(--color-fondo) 95%),
-    linear-gradient(180deg, rgb(18 20 31 / 0.2), rgb(18 20 31 / 0.6));
+    radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, var(--color-fondo) 35%, transparent) 0%,
+      color-mix(in srgb, var(--color-fondo) 75%, transparent) 60%,
+      var(--color-fondo) 95%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-fondo) 20%, transparent),
+      color-mix(in srgb, var(--color-fondo) 60%, transparent)
+    );
 }
 
 .login__poster {
@@ -55,7 +65,7 @@
 }
 
 .login__logo {
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
   filter: drop-shadow(0 0 12px var(--color-dorado-brillo));
 }
 

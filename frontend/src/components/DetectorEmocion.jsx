@@ -1,7 +1,8 @@
-import { Camera, LoaderCircle, ScanFace, TriangleAlert, VideoOff } from 'lucide-react'
+import { Camera, LoaderCircle, ScanFace, TriangleAlert, User, Users, VideoOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { cargarModelos, detectarEmocion } from '../lib/detector.js'
+import { MAXIMO_PERSONAS, cargarModelos, detectarAnimosGrupo, detectarEmocion } from '../lib/detector.js'
 import { EMOCIONES, MENSAJES_ANIMO, formatearConfianza } from '../lib/emociones.js'
+import { combinarAnimos, mensajeGrupo } from '../lib/grupo.js'
 import ChipAnimo from './ChipAnimo.jsx'
 import './DetectorEmocion.css'
 
@@ -14,6 +15,12 @@ const MENSAJES_ERROR = {
   modelos: 'No se pudo cargar el detector de emociones. Revisa tu conexión y vuelve a intentarlo.',
   'sin-rostro': 'No detectamos un rostro. Busca buena luz, mira de frente a la cámara y vuelve a intentarlo.',
   analisis: 'Ocurrió un error al analizar la imagen. Vuelve a intentarlo.',
+}
+
+const ETIQUETAS_RESULTADO = {
+  camara: 'Emoción detectada',
+  grupo: 'Ánimo del grupo',
+  manual: 'Ánimo elegido a mano',
 }
 
 function tipoErrorCamara(error) {
@@ -32,6 +39,14 @@ function tipoErrorCamara(error) {
   }
 }
 
+// Modo grupo: detecta a todas las personas frente a la cámara y combina sus
+// ánimos en uno solo. Devuelve null si no encontró a nadie.
+async function analizarGrupo(video) {
+  const personas = await detectarAnimosGrupo(video)
+  if (personas.length === 0) return null
+  return { ...combinarAnimos(personas), personas }
+}
+
 // Fases: 'cargando' (modelos y cámara) → 'lista' → 'analizando' → 'terminado' | 'error'
 // Sin `usarCamara` (no se aceptó el consentimiento) la fase es 'manual' y la
 // cámara nunca se enciende.
@@ -43,6 +58,8 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
   const intentoRef = useRef(0)
   const [fase, setFase] = useState(usarCamara ? 'cargando' : 'manual')
   const [error, setError] = useState(null)
+  // 'individual' (una sola cara) o 'grupo' (todas las caras del cuadro)
+  const [modo, setModo] = useState('individual')
 
   const apagarCamara = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -113,7 +130,8 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
     setFase('analizando')
     let detectado
     try {
-      detectado = await detectarEmocion(videoRef.current)
+      detectado =
+        modo === 'grupo' ? await analizarGrupo(videoRef.current) : await detectarEmocion(videoRef.current)
     } catch {
       apagarCamara()
       setError('analisis')
@@ -127,7 +145,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
       setFase('error')
       return
     }
-    onResultado({ ...detectado, origen: 'camara' })
+    onResultado({ ...detectado, origen: modo === 'grupo' ? 'grupo' : 'camara' })
     setFase('terminado')
   }
 
@@ -146,9 +164,34 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
   return (
     <section className="cabina">
       {usarCamara && (
+        <div className="cabina__modos" role="group" aria-label="¿Quién va a ver?">
+          <button
+            type="button"
+            className="cabina__modo"
+            aria-pressed={modo === 'individual'}
+            onClick={() => setModo('individual')}
+            disabled={fase === 'analizando'}
+          >
+            <User size={18} aria-hidden="true" /> Solo yo
+          </button>
+          <button
+            type="button"
+            className="cabina__modo"
+            data-testid="modo-grupo"
+            aria-pressed={modo === 'grupo'}
+            onClick={() => setModo('grupo')}
+            disabled={fase === 'analizando'}
+          >
+            <Users size={18} aria-hidden="true" /> En grupo
+          </button>
+        </div>
+      )}
+
+      {usarCamara && (
         <div className="cabina__pantalla" data-fase={fase}>
           <video
             ref={videoRef}
+            data-testid="camara-video"
             className="cabina__video"
             hidden={!camaraVisible}
             autoPlay
@@ -156,7 +199,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
             playsInline
           />
           {!camaraVisible && (
-            <div className="cabina__telon">
+            <div className="cabina__telon" data-testid={fase === 'cargando' ? 'camara-cargando' : 'camara-apagada'}>
               {fase === 'cargando' ? (
                 <LoaderCircle className="cabina__girando" size={32} aria-hidden="true" />
               ) : (
@@ -166,6 +209,9 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
             </div>
           )}
           {fase === 'analizando' && <div className="cabina__escaneo" aria-hidden="true" />}
+          {modo === 'grupo' && camaraVisible && (
+            <p className="cabina__pista">Pónganse todos frente a la cámara (hasta {MAXIMO_PERSONAS} personas)</p>
+          )}
         </div>
       )}
 
@@ -193,7 +239,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
       )}
 
       {error && (
-        <p className="cabina__error" role="alert">
+        <p className="cabina__error" role="alert" data-testid="estado-error">
           <TriangleAlert size={18} aria-hidden="true" />
           <span>
             {MENSAJES_ERROR[error]} También puedes elegir tu ánimo a mano.
@@ -204,14 +250,33 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
       {resultado && (
         <div className="cabina__resultado" data-testid="resultado-emocion" role="status">
           <p className="cabina__resultado-etiqueta">
-            {resultado.origen === 'camara' ? 'Emoción detectada' : 'Ánimo elegido a mano'}
+            {ETIQUETAS_RESULTADO[resultado.origen]}
           </p>
           <ChipAnimo emocion={resultado.emocion} tamano="grande">
             {resultado.origen === 'camara' && (
               <span className="cabina__confianza">{formatearConfianza(resultado.confianza)}</span>
             )}
+            {resultado.origen === 'grupo' && (
+              <span className="cabina__confianza">
+                {resultado.personas.length} {resultado.personas.length === 1 ? 'persona' : 'personas'}
+              </span>
+            )}
           </ChipAnimo>
-          <p className="cabina__mensaje">{MENSAJES_ANIMO[resultado.emocion]}</p>
+          {resultado.origen === 'grupo' && (
+            <ul className="cabina__personas" aria-label="Ánimo de cada persona">
+              {resultado.personas.map((persona, indice) => (
+                <li key={indice} className="cabina__persona">
+                  <span className="cabina__persona-numero">Persona {indice + 1}</span>
+                  <ChipAnimo emocion={persona.emocion}>
+                    <span className="cabina__confianza">{formatearConfianza(persona.confianza)}</span>
+                  </ChipAnimo>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="cabina__mensaje">
+            {resultado.origen === 'grupo' ? mensajeGrupo(resultado) : MENSAJES_ANIMO[resultado.emocion]}
+          </p>
         </div>
       )}
 

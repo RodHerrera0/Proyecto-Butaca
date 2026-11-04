@@ -50,4 +50,41 @@ describe('Recomendaciones', () => {
     renderEn('/recomendaciones?simular=vacio')
     expect(await screen.findByText('La cartelera está vacía por ahora')).toBeTruthy()
   })
+
+  it('con un grupo resume la función y filtra por el ánimo del grupo', async () => {
+    const animo = {
+      emocion: 'happy',
+      confianza: 0.85,
+      origen: 'grupo',
+      conteo: { happy: 2, sad: 1 },
+      personas: [
+        { emocion: 'happy', confianza: 0.9 },
+        { emocion: 'sad', confianza: 0.7 },
+        { emocion: 'happy', confianza: 0.8 },
+      ],
+      intencion: 'mantener',
+    }
+    renderEn('/recomendaciones', { animo })
+    expect(await screen.findByRole('heading', { name: 'Para ver en grupo · Feliz' })).toBeTruthy()
+    expect(screen.getByTestId('resumen-funcion').textContent).toContain('Función para 3 personas (2 Feliz, 1 Triste)')
+  })
+
+  // Identificadores acordados con QA para las pruebas E2E: no cambiarlos sin avisar.
+  it('mantiene los data-testid de los estados y elementos clave', async () => {
+    const { unmount } = renderEn('/recomendaciones', { onToggleFavorita: vi.fn() })
+    expect(screen.getByTestId('estado-cargando')).toBeTruthy()
+    expect(await screen.findByTestId('destacado')).toBeTruthy()
+    expect(screen.getAllByTestId('poster-card').length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId('boton-favorito').length).toBeGreaterThan(0)
+    expect(screen.getByTestId('filtro-animo-happy')).toBeTruthy()
+    unmount()
+
+    renderEn('/recomendaciones?simular=error')
+    expect(await screen.findByTestId('estado-error')).toBeTruthy()
+  })
+
+  it('marca el estado vacío con su data-testid', async () => {
+    renderEn('/recomendaciones?simular=vacio')
+    expect(await screen.findByTestId('estado-vacio')).toBeTruthy()
+  })
 })

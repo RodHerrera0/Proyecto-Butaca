@@ -15,7 +15,7 @@
 
 .deteccion__etiqueta {
   margin-bottom: var(--espacio-2);
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
   font-size: var(--texto-xs);
   font-weight: var(--peso-medio);
   letter-spacing: 0.12em;
@@ -37,7 +37,7 @@
 .deteccion__aviso svg {
   flex-shrink: 0;
   margin-top: 3px;
-  color: var(--color-dorado);
+  color: var(--color-dorado-texto);
 }
 
 .deteccion__continuar {
