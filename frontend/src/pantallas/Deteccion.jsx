@@ -1,10 +1,16 @@
 import { ArrowRight, Info } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import DetectorEmocion from '../components/DetectorEmocion.jsx'
+import SelectorIntencion from '../components/SelectorIntencion.jsx'
 import './Deteccion.css'
 
 export default function Deteccion({ animo, onAnimo, consentimiento }) {
   const usarCamara = consentimiento === 'aceptado'
+
+  // Un nuevo resultado conserva lo que se eligió hacer con el ánimo
+  function guardarResultado(resultado) {
+    onAnimo({ ...resultado, intencion: animo?.intencion ?? 'mantener' })
+  }
 
   return (
     <div className="pagina deteccion">
@@ -13,7 +19,7 @@ export default function Deteccion({ animo, onAnimo, consentimiento }) {
         <h1 className="pagina-titulo">¿Cómo te sientes?</h1>
         {usarCamara && (
           <p className="pagina-descripcion">
-            Mira a la cámara y presiona "Analizar". Solo vemos tu expresión un instante y la imagen nunca sale de tu
+            Mira a la cámara (o pónganse todos, si ven en grupo) y presiona "Analizar". Solo vemos tu expresión un instante y la imagen nunca sale de tu
             dispositivo.
           </p>
         )}
@@ -38,7 +44,20 @@ export default function Deteccion({ animo, onAnimo, consentimiento }) {
         </p>
       )}
 
-      <DetectorEmocion resultado={animo} onResultado={onAnimo} usarCamara={usarCamara} />
+      <DetectorEmocion
+        resultado={animo}
+        onResultado={guardarResultado}
+        usarCamara={usarCamara}
+      />
+
+      {animo && (
+        <SelectorIntencion
+          emocion={animo.emocion}
+          intencion={animo.intencion}
+          grupal={animo.origen === 'grupo' && animo.personas.length > 1}
+          onCambiar={(intencion) => onAnimo({ ...animo, intencion })}
+        />
+      )}
 
       {animo && (
         <Link to="/recomendaciones" className="boton boton-primario deteccion__continuar">

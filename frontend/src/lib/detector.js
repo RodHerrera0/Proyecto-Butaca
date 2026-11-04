@@ -30,8 +30,27 @@ export function cargarModelos() {
 // Devuelve { emocion, confianza } o null si no encontró un rostro.
 export async function detectarEmocion(video) {
   const faceapi = await cargarModelos()
-  const opciones = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })
-  const resultado = await faceapi.detectSingleFace(video, opciones).withFaceExpressions()
+  const resultado = await faceapi.detectSingleFace(video, opcionesDetector(faceapi)).withFaceExpressions()
   if (!resultado) return null
   return emocionDominante(resultado.expressions)
+}
+
+// Máximo de personas que se cuentan en el modo grupo.
+export const MAXIMO_PERSONAS = 6
+
+// Modo grupo: analiza todas las caras del cuadro actual, igual que arriba sin
+// guardar ninguna imagen. Devuelve [{ emocion, confianza }] ordenado de
+// izquierda a derecha tal como se ve en la pantalla (el video está en espejo).
+export async function detectarAnimosGrupo(video) {
+  const faceapi = await cargarModelos()
+  const resultados = await faceapi.detectAllFaces(video, opcionesDetector(faceapi)).withFaceExpressions()
+  return resultados
+    .sort((a, b) => b.detection.box.x - a.detection.box.x)
+    .slice(0, MAXIMO_PERSONAS)
+    .map((resultado) => emocionDominante(resultado.expressions))
+    .filter(Boolean)
+}
+
+function opcionesDetector(faceapi) {
+  return new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })
 }

@@ -2,11 +2,13 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DetectorEmocion from './DetectorEmocion.jsx'
-import { cargarModelos, detectarEmocion } from '../lib/detector.js'
+import { cargarModelos, detectarAnimosGrupo, detectarEmocion } from '../lib/detector.js'
 
 vi.mock('../lib/detector.js', () => ({
+  MAXIMO_PERSONAS: 6,
   cargarModelos: vi.fn(),
   detectarEmocion: vi.fn(),
+  detectarAnimosGrupo: vi.fn(),
 }))
 
 function ConEstado(props) {
@@ -101,5 +103,39 @@ describe('DetectorEmocion', () => {
     unmount()
 
     expect(track.stop).toHaveBeenCalled()
+  })
+
+  it('en modo grupo muestra el ánimo de cada persona y el del grupo', async () => {
+    const { track, stream } = crearStreamFalso()
+    getUserMedia.mockResolvedValue(stream)
+    detectarAnimosGrupo.mockResolvedValue([
+      { emocion: 'happy', confianza: 0.9 },
+      { emocion: 'sad', confianza: 0.7 },
+      { emocion: 'happy', confianza: 0.8 },
+    ])
+
+    render(<ConEstado />)
+    fireEvent.click(await screen.findByTestId('modo-grupo'))
+    fireEvent.click(await screen.findByTestId('boton-analizar'))
+
+    const resultado = await screen.findByTestId('resultado-emocion')
+    expect(detectarEmocion).not.toHaveBeenCalled()
+    expect(resultado.textContent).toContain('Ánimo del grupo')
+    expect(resultado.textContent).toContain('3 personas')
+    expect(resultado.textContent).toContain('Persona 2')
+    expect(resultado.textContent).toContain('La sala está dividida (2 Feliz, 1 Triste)')
+    expect(track.stop).toHaveBeenCalled()
+  })
+
+  it('en modo grupo avisa si no encontró a nadie', async () => {
+    const { stream } = crearStreamFalso()
+    getUserMedia.mockResolvedValue(stream)
+    detectarAnimosGrupo.mockResolvedValue([])
+
+    render(<ConEstado />)
+    fireEvent.click(await screen.findByTestId('modo-grupo'))
+    fireEvent.click(await screen.findByTestId('boton-analizar'))
+
+    expect((await screen.findByRole('alert')).textContent).toContain('No detectamos un rostro')
   })
 })

@@ -6,6 +6,8 @@ import App from './App.jsx'
 vi.mock('./lib/detector.js', () => ({
   cargarModelos: vi.fn(() => Promise.resolve({})),
   detectarEmocion: vi.fn(),
+  detectarAnimosGrupo: vi.fn(),
+  MAXIMO_PERSONAS: 6,
 }))
 
 function renderEn(ruta) {
@@ -92,5 +94,18 @@ describe('favoritas', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `Quitar ${nombre} de favoritas` }))
     expect(screen.getByText('Todavía no guardaste nada')).toBeTruthy()
+  })
+})
+
+describe('acompañar o cambiar el ánimo', () => {
+  it('elegir "Cambiarlo" muestra la ruta y cambia las recomendaciones', async () => {
+    renderEn('/detectar')
+    fireEvent.change(screen.getByTestId('selector-animo-manual'), { target: { value: 'sad' } })
+    fireEvent.click(screen.getByTestId('intencion-cambiar'))
+    expect(screen.getByTestId('ruta-animo').textContent).toMatch(/Triste.*Feliz/)
+
+    fireEvent.click(screen.getByRole('link', { name: /Ver recomendaciones/ }))
+    expect(await screen.findByRole('heading', { name: 'Para cambiarte el ánimo · Feliz' })).toBeTruthy()
+    expect(screen.getByTestId('resumen-funcion').textContent).toContain('buscamos llevarte hacia feliz')
   })
 })

@@ -1,4 +1,4 @@
-import { CloudOff, Popcorn, RefreshCw } from 'lucide-react'
+import { CloudOff, Popcorn, RefreshCw, Ticket } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Carrusel from '../components/Carrusel.jsx'
@@ -7,13 +7,45 @@ import Hero from '../components/Hero.jsx'
 import PosterCard from '../components/PosterCard.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { FILAS_MOCK, obtenerTitulosMock } from '../data/mock-titulos.js'
-import { EMOCIONES, traducirEmocion } from '../lib/emociones.js'
+import { EMOCIONES, emocionObjetivo, traducirEmocion } from '../lib/emociones.js'
+import { resumirConteo } from '../lib/grupo.js'
 import './Recomendaciones.css'
 
 const FILTROS = ['todos', ...Object.keys(EMOCIONES)]
 
 function porCalificacion(a, b) {
   return b.calificacion - a.calificacion
+}
+
+function tituloFilaAnimo(filtro, animo, objetivo) {
+  const esGrupo = animo?.origen === 'grupo' && animo.personas.length > 1
+  if (filtro === 'todos') return esGrupo ? 'Para ver en grupo' : 'Para tu ánimo de hoy'
+  if (animo?.intencion === 'cambiar' && filtro === objetivo) {
+    return `${esGrupo ? 'Para cambiar el ánimo del grupo' : 'Para cambiarte el ánimo'} · ${traducirEmocion(filtro)}`
+  }
+  return `${esGrupo ? 'Para ver en grupo' : 'Para tu ánimo de hoy'} · ${traducirEmocion(filtro)}`
+}
+
+// Resumen de la "función" de hoy: cuántas personas, cómo están y hacia dónde
+// apuntan las recomendaciones.
+function ResumenFuncion({ animo, objetivo }) {
+  const esGrupo = animo.origen === 'grupo' && animo.personas.length > 1
+  const quien = esGrupo
+    ? `Función para ${animo.personas.length} personas (${resumirConteo(animo.conteo)})`
+    : `Hoy te sientes ${traducirEmocion(animo.emocion).toLowerCase()}`
+  const plan =
+    animo.intencion === 'cambiar'
+      ? `buscamos llevar${esGrupo ? 'los' : 'te'} hacia ${traducirEmocion(objetivo).toLowerCase()}`
+      : `elegimos historias que ${esGrupo ? 'los' : 'te'} acompañen`
+
+  return (
+    <p className="recomendaciones__funcion" data-testid="resumen-funcion">
+      <Ticket size={18} aria-hidden="true" />
+      <span>
+        {quien}: {plan}.
+      </span>
+    </p>
+  )
 }
 
 function CargandoRecomendaciones() {
@@ -60,7 +92,9 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   const [estado, setEstado] = useState('cargando')
   const [titulos, setTitulos] = useState([])
   const [intento, setIntento] = useState(0)
-  const [filtro, setFiltro] = useState(animo?.emocion ?? 'todos')
+  // El filtro inicial depende de si se quiere mantener o cambiar el ánimo
+  const objetivo = animo ? emocionObjetivo(animo.emocion, animo.intencion) : 'todos'
+  const [filtro, setFiltro] = useState(objetivo)
 
   useEffect(() => {
     let activo = true
@@ -89,7 +123,7 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   const filas = [
     {
       id: 'animo',
-      titulo: filtro === 'todos' ? 'Para tu ánimo de hoy' : `Para tu ánimo de hoy · ${traducirEmocion(filtro)}`,
+      titulo: tituloFilaAnimo(filtro, animo, objetivo),
       items: paraTuAnimo,
     },
     ...FILAS_MOCK.map((fila) => ({ ...fila, items: filtrados.filter((t) => t.filas.includes(fila.id)) })),
@@ -143,6 +177,7 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
           />
         )}
         <div className="pagina recomendaciones__filas">
+          {animo && <ResumenFuncion animo={animo} objetivo={objetivo} />}
           <div className="recomendaciones__filtros" role="group" aria-label="Filtrar por ánimo">
             {FILTROS.map((emocion) => (
               <ChipAnimo
