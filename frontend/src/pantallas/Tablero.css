@@ -1,0 +1,71 @@
+.tablero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+}
+
+.tablero__cuadricula {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espacio-5);
+}
+
+@media (min-width: 900px) {
+  .tablero__cuadricula {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tablero__tarjeta--ancha {
+    grid-column: 1 / -1;
+  }
+}
+
+.tablero__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  padding: var(--espacio-6);
+}
+
+.tablero__titulo {
+  font-size: var(--texto-xl);
+}
+
+.tablero__descripcion {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.tablero__grafica {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: 200px;
+  margin-top: var(--espacio-3);
+  border: 1px dashed var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 39px, var(--color-borde) 39px 40px),
+    rgb(13 15 24 / 0.35);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.tablero__tarjeta--ancha .tablero__grafica {
+  min-height: 260px;
+}
+
+.tablero__grafica svg {
+  color: var(--color-dorado);
+  opacity: 0.8;
+}
+
+.tablero__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-3);
+}
