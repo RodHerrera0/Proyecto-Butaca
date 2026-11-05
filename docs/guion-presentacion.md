@@ -1,75 +1,112 @@
 # Guion de presentación de Butaca
 
-Issue #49. Propuesta de diez minutos para los cinco integrantes; confirmar duración con el ingeniero. El guion distingue lo que ejecuta `docs/luis` de los avances leídos en ramas de trabajo. No debe anunciarse una funcionalidad como terminada antes de integrarla y verificarla.
+Issue #49. Versión del 4 de noviembre de 2026 sobre `docs/luis`, base `0cb87c9`. Propuesta de diez minutos, pendiente de confirmar con el ingeniero. Las intervenciones describen lo implementado y los límites de integración; cada integrante debe adaptar la redacción a su forma de hablar.
 
-## Preparación
+## Preparación del equipo
 
-Julio confirma la rama y el commit que se van a presentar, instala dependencias, levanta los servicios y recorre los pasos con el equipo. Preparar una alternativa manual si falla la cámara y evitar mostrar archivos `.env`, tokens o datos personales. Rodrigo comprueba el navegador y sus permisos antes de la exposición.
+Julio registra el commit de la demostración, prepara las dependencias y comprueba el recorrido antes del ensayo. Rodrigo revisa navegador, modelos y permisos. Guillermo y Michael preparan los servicios únicamente en un entorno autorizado. Luis contrasta el guion y el checklist con esa versión.
 
-Si se presenta la base actual `docs/luis`, la demostración se limita al título del frontend y a `/health`, después de comprobar su ejecución. Las pantallas de Rodrigo solo se presentan como prototipo en su entorno preparado por el equipo. No cambiar ramas ni mezclar trabajo para improvisar una demostración.
+El recorrido disponible en el frontend usa datos simulados. Puede mostrarse selección manual, intención, recomendaciones, favoritas temporales y el diseño del tablero, explicando su alcance. Las cuentas reales, la persistencia y el catálogo TMDB no deben atribuirse a esa pantalla hasta conectarlos.
 
-## Intervenciones
+No mostrar `.env`, tokens o conexiones privadas. Para una demostración grupal, explicar el uso a todas las personas antes de encuadrarlas. Si la cámara falla, continuar manualmente o utilizar la simulación identificándola como tal.
 
-### 1. Luis Samayoa — propósito y alcance (1 minuto)
+## 1. Luis Samayoa — problema, arquitectura y aceptación (1 minuto)
 
-«Butaca es nuestro proyecto final de Programación Web. La propuesta es ayudar a explorar películas y series a partir de un ánimo elegido por la persona o de una expresión facial estimada con la cámara. La cámara es opcional: una expresión no nos permite saber con certeza cómo se siente alguien.
+«Butaca parte de una necesidad sencilla: reducir el tiempo que pasamos eligiendo qué ver. El proyecto propone orientar películas y series con un ánimo elegido por la persona o una expresión estimada con la cámara. Esa clasificación puede equivocarse y no nos permite afirmar cómo se siente alguien.
 
-Mi responsabilidad fue documentar el funcionamiento comprobable, preparar el consentimiento y relacionar las expresiones con los géneros del catálogo. También organizamos una lista de aceptación para distinguir lo implementado de lo que todavía necesita integración o pruebas».
+La arquitectura combina React y Vite para la interfaz, Express para la API y Prisma con PostgreSQL en Supabase para los datos. El catálogo real se consulta desde el backend. Mi responsabilidad fue documentar esa separación, preparar el consentimiento y convertir el brief en criterios que podamos verificar».
 
-Mostrar el estado del proyecto en el README y dar paso a Rodrigo: «Rodrigo explica ahora el recorrido de la interfaz y las decisiones del uso de cámara».
+Mostrar la tabla de estado del README: «Los módulos ya están reunidos en esta rama, pero aún falta conectar la interfaz con las rutas de datos. Rodrigo mostrará el recorrido que sí ofrece el frontend actual».
 
-### 2. J. Rodrigo Herrera — interfaz y recorrido (3 minutos)
+## 2. J. Rodrigo Herrera — interfaz y detección (3 minutos)
 
-«La interfaz está construida con React y Vite. En el prototipo revisado, el inicio de sesión todavía está pendiente y se puede continuar sin una cuenta. Antes de habilitar la cámara se explica su uso y se permite rechazarla.
+«La cámara es opcional. Desde el consentimiento puedo rechazarla y elegir el ánimo a mano. Después puedo pedir recomendaciones que lo acompañen o seleccionar “Cambiarlo”, que orienta el filtro hacia otra categoría. Esa opción cambia la búsqueda, no garantiza un efecto emocional».
 
-Si aceptamos, el navegador también debe permitir el acceso. Aparece la vista previa; el detector analiza cuando presionamos “Analizar”. Los modelos se cargan desde la aplicación y el procesamiento del cuadro ocurre en el navegador. La categoría y la puntuación son una estimación. La persona puede elegir otro ánimo manualmente».
+Demostración principal:
 
-En el prototipo preparado, mostrar rechazo → selección manual → recomendaciones → agregar y quitar una favorita. Después, si el equipo lo verificó, volver al consentimiento y mostrar aceptación → permiso → análisis → cámara apagada. Comentar que la vista previa está activa antes de presionar «Analizar».
+1. Abrir el login y mostrar que Google/GitHub todavía están deshabilitados; continuar sin iniciar sesión.
+2. En consentimiento, elegir «No acepto» y seleccionar manualmente «Triste».
+3. Elegir «Cambiarlo», explicar la ruta hacia «Feliz» y abrir recomendaciones.
+4. Agregar una favorita, abrir Favoritas y quitarla.
+5. Abrir Tablero y explicar que las gráficas todavía son espacios reservados.
 
-«Las recomendaciones de esta versión usan datos simulados y las favoritas están en memoria. Al recargar no se conservan. El tablero tiene el diseño preparado, pero las gráficas todavía no consumen historial real».
+«En este recorrido los títulos vienen del catálogo simulado y las favoritas quedan en memoria. Recargar borra esos datos de la visita. El tema claro u oscuro sí se recuerda en este navegador».
 
-Si cámara o modelos fallan, explicar el mensaje y continuar por selección manual. No presentar un error simulado como una falla real del servicio TMDB.
+Si la cámara fue comprobada antes del ensayo:
 
-### 3. Michael Gutiérrez — API y catálogo (2 minutos)
+«Si acepto, el navegador pide su propio permiso y aparece una vista previa. El análisis comienza con “Analizar” y la cámara se detiene al terminar. Los modelos están incluidos en la aplicación y procesan el cuadro localmente».
 
-«Mi área es la API de recomendaciones y la conexión con TMDB. En la base documentada existe Express con una ruta de salud. La consulta real al catálogo no está integrada en esa rama, así que no corresponde presentar los títulos del prototipo como una respuesta de TMDB.
+Mostrar modo individual y, con participantes informados, modo grupal. Explicar que admite hasta seis rostros, calcula una categoría por persona y suma puntuaciones para obtener un resultado común. «Una categoría con mayor peso puede ganar sin representar a la mayoría; no estamos midiendo un sentimiento colectivo».
 
-La propuesta documental relaciona las siete expresiones con géneros de películas y series por separado. Por ejemplo, Acción usa el ID 28 en películas y televisión agrupa Acción y aventura con el ID 10759. Debo validar la tabla y definir cómo combinar los filtros y responder si no hay resultados».
+Alternativa de demostración: `/detectar?simular=grupo` representa dos personas felices y una triste sin usar cámara. Nombrarlo explícitamente como simulación; no presentarlo como prueba del detector real.
 
-Mostrar una fila de la tabla, explicar que la relación es editorial y que no garantiza cambios de ánimo. Si al preparar la exposición ya existe una integración verificada, sustituir este bloque por una petición real y su respuesta, indicando endpoint y commit probados. No inventar rutas.
+## 3. Michael Gutiérrez — API, géneros y TMDB (2 minutos)
 
-### 4. Guillermo Contreras — datos y sesión (2 minutos)
+«La ruta de recomendaciones recibe una de las siete claves de expresión. Para cada clave existe un conjunto de géneros. Consultamos películas y series por separado porque TMDB usa categorías distintas: Acción y Aventura son IDs separados en películas y se agrupan en televisión.
 
-«Mi responsabilidad es la persistencia y la sesión. En mi rama se definieron modelos Prisma para usuarios, entradas de ánimo, favoritas y recomendaciones, con PostgreSQL en Supabase. También existe validación del token mediante las claves públicas de Supabase y una ruta `/api/me` que identifica o registra al usuario en la base.
+El backend pide contenido en español de México, ordenado por popularidad, con al menos 200 votos, y devuelve hasta cinco películas y cinco series. Los géneros se unen con comas, por lo que se exige su combinación. Esta decisión puede reducir mucho el catálogo y debemos validar los resultados».
 
-Esto es un avance de esa rama y no demuestra que el frontend ya guarde datos. Además, debemos alinear las siete expresiones del frontend con las categorías del modelo, que actualmente son cuatro. Antes de conectar el historial necesitamos cerrar ese contrato».
+Mostrar `GET /api/recommendations?mood=happy` en el código o su contrato, sin ejecutar una consulta externa no autorizada.
 
-Mostrar el esquema sin credenciales. Explicar la diferencia entre el cuadro de video procesado, el resultado de clasificación y un registro persistido. No prometer que ya existe eliminación de cuenta o historial si no se ha implementado y probado.
+«La consulta está implementada, pero la pantalla todavía no la consume. También registra las recomendaciones para alimentar el tablero. Al repetirla pueden crecer los conteos, así que debemos revisar qué representa cada consulta en el historial».
 
-### 5. Julio Portillo — pruebas y entrega (2 minutos)
+Señalar la tabla actual de géneros: «La documentación ya refleja la lógica del backend. Quedan por validar el género repetido de series para “Enojado”, los conjuntos con pocos resultados y la relación con la opción “Cambiarlo” del frontend».
 
-«Mi responsabilidad es QA y DevOps. Tenemos jobs de GitHub Actions que instalan y ejecutan las pruebas de frontend y backend. En la base revisada todavía no hay casos: el runner del backend terminó con cero pruebas y el intento del frontend no pudo arrancar Vitest porque faltaban dependencias. Esos resultados no certifican el recorrido funcional.
+Si existe una integración comprobada al ensayar, sustituir la explicación de conexión pendiente por una petición real desde la interfaz y mostrar la evidencia correspondiente.
 
-La lista de aceptación incluye permisos de cámara, alternativa manual, respuestas vacías o con error, sesión y persistencia. Playwright está previsto para las pruebas E2E, pero su infraestructura todavía no existe en esta rama. Para la entrega debemos registrar resultados sobre un commit concreto y confirmar que CI ejecuta casos reales».
+## 4. Guillermo Contreras — Prisma, Supabase y autenticación (2 minutos)
 
-Mostrar el checklist y sustituir las cifras solo con resultados obtenidos durante la preparación. Cerrar indicando el pendiente concreto que el equipo está resolviendo o, si se completó la integración, la evidencia que permitió aceptarla.
+«El modelo tiene usuarios, entradas de ánimo, favoritas y recomendaciones. El enum de ánimo ya contempla las siete categorías del detector. Cada registro se asocia a un usuario, y una favorita se diferencia por usuario, ID de TMDB y tipo de contenido.
+
+Las rutas verifican un token de Supabase con claves públicas y audiencia autenticada. El middleware también sincroniza correo, nombre y avatar cuando están disponibles. Eso protege la API; el login con Google o GitHub en el frontend sigue pendiente».
+
+Mostrar el esquema y las rutas de ánimo, favoritas y tablero sin exponer conexiones.
+
+«Guardar una categoría y su puntuación es distinto de guardar una fotografía. El backend dispone de persistencia de resultados, pero el frontend aún no la utiliza. No hay campos para identificar participantes de un grupo ni guardar la intención de recomendación: necesitamos cerrar ese contrato antes de conectarlo».
+
+«El tablero agrega ánimos y recomendaciones registradas; no informa qué películas vio realmente la persona. Además, la migración más reciente elimina dos categorías antiguas. Debemos revisar los datos existentes antes de aplicarla».
+
+## 5. Julio Portillo — pruebas, CI y despliegue (2 minutos)
+
+«Ambos proyectos usan Vitest. En backend combinamos Vitest con Supertest para ejercitar las rutas; Prisma, autenticación y TMDB se simulan. En frontend hay pruebas de componentes, consentimiento, grupo y navegación, con cámara simulada.
+
+En la revisión documental del 4 de noviembre se intentaron ejecutar ambas suites, pero faltaban las dependencias y no se encontró Vitest. Esos intentos no produjeron pruebas aprobadas. Antes de la entrega debemos ejecutarlas y registrar sus conteos sobre el commit que presentamos».
+
+Mostrar el registro de pruebas y el checklist, reemplazando ese resultado solo si ya existen evidencias nuevas.
+
+«CI instala y ejecuta los tests para cambios en main y develop. Falta revisar su cobertura para cada push de las ramas de trabajo, como pide el brief. Playwright todavía no está configurado: disponer de rutas de simulación no reemplaza probar el recorrido completo».
+
+«También debemos confirmar qué alternativa del punto final del brief entregaremos: nube con HTTPS, integración de música o GIF, o Rekognition. No contamos con evidencia de despliegue en esta revisión».
+
+Finalizar con el pendiente concreto que el equipo esté resolviendo o con la evidencia de aceptación obtenida en el ensayo. Evitar anunciar el proyecto como terminado si todavía no cumple el flujo con cuenta, catálogo, persistencia y tablero.
 
 ## Preguntas técnicas para ensayar
 
-| Pregunta posible | Responsable | Respuesta basada en la revisión |
+| Pregunta del ingeniero | Responsable | Respuesta fundamentada |
 |---|---|---|
-| ¿El detector sabe cómo se siente la persona? | Luis y Rodrigo | Clasifica expresiones; no determina el estado emocional. El usuario puede elegir manualmente. |
-| ¿Qué significa el porcentaje mostrado? | Rodrigo | Es la puntuación de la expresión seleccionada por el modelo; no la certeza de un sentimiento. |
-| ¿Cuándo se enciende la cámara? | Rodrigo | Tras aceptar y obtener permiso, al preparar la pantalla de detección. El análisis empieza con «Analizar». |
-| ¿Se suben las fotos? | Rodrigo | El flujo de detector revisado procesa video localmente y no incluye subida de imágenes. Falta verificar la red del despliegue que se evalúe. |
-| ¿Por qué esos géneros? | Michael y Luis | Son una propuesta editorial de exploración; Michael debe validarla. Los catálogos de películas y series tienen IDs distintos. |
-| ¿Dónde está la clave de TMDB? | Michael | Debe permanecer en el backend. La base declara la variable, pero todavía no implementa la consulta. |
-| ¿Qué se guarda al recargar? | Guille | En el prototipo de Rodrigo se pierden los estados en memoria. El esquema de Guille prevé persistencia, todavía sin flujo integrado probado. |
-| ¿Cómo se valida la sesión? | Guille | La referencia revisada usa `jose`, JWKS de Supabase y audiencia `authenticated`; la conexión completa debe probarse. |
-| ¿Qué pasa si la cámara no funciona? | Rodrigo y Julio | Mostrar el error correspondiente y permitir selección manual. Ejecutar los casos antes de afirmarlos como aprobados. |
-| ¿CI verde implica que está terminado? | Julio | No: revisar cuántos casos se ejecutaron; CI actual no cubre build, lint ni E2E. |
-| ¿Por qué hay siete expresiones y cuatro ánimos en datos? | Guille, Michael y Rodrigo | Es una diferencia de contrato pendiente; no hay una equivalencia automática documentada como definitiva. |
+| ¿Saben cómo se siente el usuario? | Rodrigo y Luis | El modelo clasifica expresiones; su puntuación no acredita un estado emocional. La selección manual permite indicar otra preferencia. |
+| ¿Cuándo se enciende la cámara? | Rodrigo | Después de aceptar y obtener permiso, al preparar la pantalla. La vista previa precede al análisis. |
+| ¿Se guardan las fotos? ¿Se guardan resultados? | Rodrigo y Guillermo | El flujo revisado no sube ni guarda imágenes. La API sí permite persistir categorías y datos de cuenta; el frontend aún no envía esos resultados. |
+| ¿El resultado grupal es una mayoría? | Rodrigo | Es un voto ponderado por puntuación, con desempates por número de personas y orden de claves; puede diferir de la mayoría numérica. |
+| ¿Cambiar el ánimo usa la misma emoción al recomendar? | Rodrigo y Michael | El frontend transforma el objetivo; la API solo recibe una clave. Falta acordar el envío y distinguir el ánimo observado del objetivo en el historial. |
+| ¿Por qué podrían aparecer pocos títulos? | Michael | Se exige la intersección de géneros y al menos 200 votos. No hay una consulta alternativa automática. |
+| ¿Dónde está la clave TMDB? | Michael | En el entorno backend y enviada como Bearer; ninguna variable pública del frontend debe contenerla. |
+| ¿Qué protege los datos por usuario? | Guillermo | Middleware JWT y filtros por usuario; deben comprobarse con dos cuentas, porque los tests actuales simulan la sesión. |
+| ¿Las favoritas permanecen al recargar? | Rodrigo y Guillermo | Las de la interfaz actual no; las rutas backend ofrecen persistencia, todavía sin conexión con esa pantalla. |
+| ¿El tablero mide películas vistas? | Guillermo | No: agrega las recomendaciones guardadas y los resultados de ánimo. |
+| ¿Pasar los tests demuestra que TMDB o Supabase funcionan? | Julio | No cuando esos servicios se simulan. Se necesitan verificaciones autorizadas de integración y del recorrido E2E. |
+| ¿Qué falta para entregar según el brief? | Luis y Julio | Conectar cuentas, catálogo, datos y tablero; verificar servicios, seguridad y cámara; ejecutar pruebas, configurar E2E y demostrar la alternativa final elegida. |
 
-## Acuerdos antes del ensayo final
+## Decisiones que cada integrante debe poder explicar
 
-Confirmar versión integrada y duración; validar tabla de géneros; resolver contrato de ánimo; incorporar textos de privacidad; comprobar la persistencia realmente disponible; registrar resultados con Julio. Luis actualizará el README y las frases de este guion con esa evidencia antes de la presentación final.
+El brief pide responder qué decisión fue más difícil, qué alternativas se descartaron y de qué se está menos seguro. No corresponde inventar experiencias personales. Cada integrante debe preparar respuestas propias con evidencia; estos temas sirven como guía:
+
+| Integrante | Decisión para explicar | Alternativas para contrastar | Incertidumbre que conviene reconocer |
+|---|---|---|---|
+| Rodrigo | Inferencia local y combinación de resultados grupales | Individual frente a grupo; cámara frente a selección manual | Comportamiento del modelo con iluminación y rostros distintos |
+| Michael | Géneros, condición AND y filtros de catálogo | AND frente a OR; fallback ante pocos resultados | Calidad real de las recomendaciones |
+| Guillermo | Relaciones por usuario y transición de enum | Persistencia del observado frente al objetivo; datos individuales frente a agregados | Migración de registros anteriores y contrato grupal |
+| Julio | Separación de pruebas simuladas y reales | Componentes, HTTP y recorrido Playwright | Cobertura de servicios, permisos y despliegue |
+| Luis | Documentar evidencia y alcance del consentimiento | Descripción de código frente a aceptación verificada | Acuerdos de conservación y eliminación aún sin definir |
+
+Antes del ensayo final, Luis actualiza las frases de estado con los resultados aportados por sus responsables. Confirmar duración, fecha, alternativa del punto 6 y commit de demostración; no modificar cifras o declarar integraciones por suposición.

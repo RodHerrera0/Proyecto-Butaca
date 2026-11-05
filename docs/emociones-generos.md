@@ -1,41 +1,67 @@
-# Relación entre emociones y géneros
+# Expresiones faciales y géneros de TMDB
 
-Issue #9. Propuesta documental del 2 de noviembre de 2026, **pendiente de validación de Michael Gutiérrez** antes de convertirla en configuración de la API.
+Issue #9. Revisión del 4 de noviembre de 2026 sobre `docs/luis`, base `0cb87c9`. La tabla principal describe `backend/src/routes/recommendations.js`; no sustituye su lógica por la propuesta documental anterior. Michael Gutiérrez debe validar las decisiones definitivas.
 
-## Alcance y criterio
+## Qué representa el resultado
 
-face-api.js devuelve puntuaciones para siete expresiones. La categoría con mayor puntuación describe la clasificación del modelo, no una certeza sobre lo que siente la persona. La iluminación, la postura y las diferencias individuales pueden alterar el resultado. La selección manual debe permitir que la persona indique su propia preferencia.
+El detector utiliza las siete claves de `frontend/src/lib/emociones.js`. En modo individual selecciona la expresión con mayor puntuación; si no encuentra rostro devuelve `null`. El resultado no prueba un estado emocional. Tampoco corresponde tratar el porcentaje como certeza de lo que siente la persona.
 
-La siguiente relación es una decisión editorial para explorar el catálogo. Propone comedia y opciones familiares ante expresiones asociadas con malestar, y relatos de aventura o intriga cuando se busca variedad. No está validada como intervención emocional ni garantiza que una película mejore el ánimo. Las alternativas de cada fila no exigen que un título pertenezca a todos los géneros simultáneamente.
+La API recibe las mismas claves en minúsculas. `POST /api/moods` las convierte a mayúsculas para el enum Prisma `Mood`, que ahora contiene las siete categorías. El antiguo desajuste con `TIRED` y `ADRENALINE` ya no aparece en el esquema actual; queda por comprobar la aplicación de las migraciones en la base utilizada por el equipo.
 
-## Propuesta por expresión
+## Mapeo implementado en el backend
 
-Los nombres en español son etiquetas de lectura; la integración debe obtener los nombres localizados de TMDB.
+Los géneros se combinan con comas en `with_genres`: la consulta exige la concurrencia de los géneros, no una elección entre alternativas. Los nombres de la tabla son etiquetas en español para facilitar su lectura.
 
-| Clave face-api.js | Etiqueta | Películas: género e ID | Series: género e ID | Motivo de la propuesta |
+| Clave | Etiqueta | Películas: género e ID | Series: género e ID enviados | Lectura editorial del mapeo |
 |---|---|---|---|---|
-| `neutral` | Neutral | Drama `18`, Documental `99`, Aventura `12` | Drama `18`, Documental `99`, Acción y aventura `10759` | Ofrecer variedad cuando la expresión no orienta una preferencia clara. |
-| `happy` | Feliz | Comedia `35`, Animación `16`, Aventura `12` | Comedia `35`, Animación `16`, Acción y aventura `10759` | Proponer entretenimiento de tono ligero o dinámico. |
-| `sad` | Triste | Comedia `35`, Familia `10751` | Comedia `35`, Familia `10751` | Ofrecer un cambio de tono sin asumir que la persona desea historias tristes. |
-| `angry` | Enojado | Acción `28`, Aventura `12`, Comedia `35` | Acción y aventura `10759`, Comedia `35` | Dar alternativas de ritmo activo y humor, sin prometer que reduzcan el enojo. |
-| `fearful` | Miedo | Comedia `35`, Animación `16`, Familia `10751` | Comedia `35`, Animación `16`, Familia `10751` | Priorizar opciones potencialmente ligeras; no asociar miedo con terror por defecto. |
-| `disgusted` | Asco | Comedia `35`, Aventura `12`, Fantasía `14` | Comedia `35`, Acción y aventura `10759`, Ciencia ficción y fantasía `10765` | Proponer un cambio de tema y exploración de otros escenarios. |
-| `surprised` | Sorpresa | Misterio `9648`, Ciencia ficción `878`, Fantasía `14` | Misterio `9648`, Ciencia ficción y fantasía `10765` | Explorar relatos con descubrimientos o situaciones inesperadas. |
+| `neutral` | Neutral | Aventura `12` + Comedia `35` | Acción y aventura `10759` + Comedia `35` | Historias dinámicas con humor cuando no hay una orientación expresiva marcada. |
+| `happy` | Feliz | Comedia `35` + Animación `16` | Comedia `35` + Animación `16` | Entretenimiento animado con humor. |
+| `sad` | Triste | Familia `10751` + Comedia `35` | Familia `10751` + Comedia `35` | Un tono familiar y cómico como alternativa de exploración. |
+| `angry` | Enojado | Acción `28` + Aventura `12` | Acción y aventura `10759`, `10759` | Relatos activos; ambos IDs de películas convergen en una categoría de televisión. |
+| `fearful` | Miedo | Animación `16` + Familia `10751` | Animación `16` + Familia `10751` | Opciones animadas y familiares en lugar de asociar miedo con terror por defecto. |
+| `disgusted` | Asco | Documental `99` + Drama `18` | Documental `99` + Drama `18` | Explorar contenido documental con componente dramático; combinación por revisar con Michael. |
+| `surprised` | Sorpresa | Ciencia ficción `878` + Misterio `9648` | Ciencia ficción y fantasía `10765` + Misterio `9648` | Historias de descubrimiento e intriga. |
 
-## Diferencias entre películas y series
+La última columna interpreta la selección observada; no atribuye al equipo una justificación científica ni garantiza un efecto emocional. La pertinencia y disponibilidad de títulos debe validarse con respuestas reales.
 
-TMDB mantiene catálogos distintos en `GET /3/genre/movie/list` y `GET /3/genre/tv/list`. No debe copiarse el conjunto de IDs de películas para consultar series: Acción `28` y Aventura `12` se agrupan como Acción y aventura `10759` en televisión; Ciencia ficción `878` y Fantasía `14` se agrupan como Ciencia ficción y fantasía `10765`. No son equivalencias exactas de contenido, sino categorías distintas del catálogo.
+## Consulta y diferencias de catálogo
 
-Comedia `35`, Animación `16`, Drama `18`, Documental `99`, Familia `10751` y Misterio `9648` existen en ambos catálogos. El género de películas «Película de TV» `10770` no identifica una serie. Debe conservarse el tipo de contenido junto al ID del título y seleccionar el catálogo correspondiente.
+La conversión implementada para series es `28 → 10759`, `12 → 10759` y `878 → 10765`. Los demás IDs usados se conservan. Acción y aventura es una categoría conjunta en televisión; Ciencia ficción y fantasía también agrupa conceptos separados en películas.
 
-## Decisiones pendientes de integración
+Para `angry`, el código transforma `[28, 12]` en `[10759, 10759]` sin eliminar duplicados. La documentación conserva ese detalle; no presume cómo lo resolverá TMDB. Fantasía `14` no forma parte del mapeo actual, aunque se mencionara en la propuesta anterior.
 
-- Michael debe confirmar los géneros, la combinación de filtros, el orden de resultados y el comportamiento cuando no haya títulos disponibles; contrastar los IDs con respuestas autenticadas de TMDB antes de integrar.
-- Rodrigo y Guille deben acordar un contrato: el frontend revisado usa las siete claves de esta tabla, mientras el enum `Mood` de Guille contiene `HAPPY`, `SAD`, `TIRED` y `ADRENALINE`. `neutral` no equivale a cansancio y `angry` no equivale automáticamente a adrenalina.
-- No convertir ausencia de rostro en `neutral`. El detector revisado devuelve `null` si no encuentra rostro y permite reintentar o seleccionar manualmente.
-- No fijar un umbral de confianza emocional sin validación. El umbral `0.5` observado en `TinyFaceDetectorOptions` corresponde a detección de rostro, no a aceptación de la expresión.
-- El catálogo simulado de Rodrigo no demuestra que esta tabla esté implementada en TMDB.
+El backend consulta `/discover/movie` y `/discover/tv` en paralelo con:
 
-## Fuentes consultadas
+- Géneros unidos por comas, con semántica AND.
+- Idioma `es-MX`, orden `popularity.desc` y mínimo de 200 votos.
+- Hasta cinco resultados de cada respuesta, devueltos primero como películas y luego como series.
 
-Consulta del 2 de noviembre de 2026. Se revisaron las siete etiquetas en el [código fuente de face-api.js](https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/src/faceExpressionNet/FaceExpressions.ts). Los catálogos separados se documentan en [géneros de películas](https://developer.themoviedb.org/reference/genre-movie-list) y [géneros de series](https://developer.themoviedb.org/reference/genre-tv-list); los IDs figuran en los ejemplos de la [especificación OpenAPI oficial de TMDB](https://developer.themoviedb.org/openapi/tmdb-api.json). No se consultó la API con credenciales del equipo.
+Así puede devolver hasta diez títulos; no es un ranking único por calificación. Guarda los IDs de género que TMDB devuelve para cada título como cadenas de texto, junto con `MOVIE` o `TV`. Si TMDB responde con error, se propaga al manejador general de errores; no existe un catálogo alternativo en esa ruta. Los estados simulados de la interfaz son un mecanismo distinto.
+
+La documentación oficial distingue los catálogos de [películas](https://developer.themoviedb.org/reference/genre-movie-list) y [series](https://developer.themoviedb.org/reference/genre-tv-list). Las referencias de [Discover para películas](https://developer.themoviedb.org/reference/discover-movie) y [Discover para series](https://developer.themoviedb.org/reference/discover-tv) especifican que las comas combinan con AND y las barras con OR. No se hicieron consultas autenticadas al catálogo en esta revisión.
+
+## Ánimo objetivo y grupos en el frontend
+
+La interfaz todavía filtra títulos de `mock-titulos.js`, sin consumir este mapeo. La opción «Acompañarlo» conserva la expresión; «Cambiarlo» aplica la transformación de `emocionObjetivo`:
+
+| Expresión inicial | Objetivo al elegir «Cambiarlo» |
+|---|---|
+| `neutral` | `surprised` |
+| `happy` | `surprised` |
+| `sad` | `happy` |
+| `angry` | `neutral` |
+| `fearful` | `happy` |
+| `disgusted` | `happy` |
+| `surprised` | `neutral` |
+
+Esa transformación es una preferencia de recomendación, no evidencia de que el ánimo cambie. La API solo recibe `mood`; no tiene un parámetro de intención ni decide entre expresión observada y objetivo. Michael y Rodrigo deben acordar qué valor se enviará para recomendar y cómo conservar el dato original del historial.
+
+En grupo se analizan hasta seis rostros y se suman las puntuaciones de cada expresión dominante. Gana el mayor peso; los empates se resuelven por número de personas y luego por el orden de las siete claves. La confianza agregada es el promedio de quienes aportan a la categoría ganadora. Puede ganar una categoría que no sea mayoría numérica y no representa el sentir de todas las personas. El backend no tiene un contrato para participantes, conteo u origen grupal.
+
+## Diferencias con la propuesta inicial y alternativas
+
+La propuesta anterior incluía más alternativas por fila y no describía el filtro AND actual. Por ejemplo, para `disgusted` proponía comedia, aventura y fantasía; el backend utiliza documental y drama. Para `neutral` sugería drama y documental además de aventura, mientras la API combina aventura y comedia.
+
+Esas opciones quedan como recomendaciones para discutir, no como configuración implementada. Antes de cambiar el comportamiento, Michael debe validar si conviene conservar AND o utilizar OR, eliminar el ID duplicado en series y definir una respuesta cuando la intersección no produzca títulos. No se modificó código del backend.
+
+También queda pendiente decidir cómo integrar la intención del frontend y el resultado grupal, y verificar la calidad del catálogo obtenido. El umbral `0.5` de `TinyFaceDetectorOptions` controla la detección del rostro, no una confianza mínima para aceptar una emoción.
