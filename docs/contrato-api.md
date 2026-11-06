@@ -97,7 +97,7 @@ Query: mood obligatorio con las mismas siete claves minúsculas; moodId opcional
 
 posterPath es una ruta de imagen, no una URL completa. overview, year y voteAverage pueden ser null. genres contiene IDs como cadenas; los títulos de ambos tipos pueden compartir tmdbId, por lo que el frontend combina tipo e ID. Las respuestas conservan los campos usados por `frontend/src/lib/adaptadores.js`.
 
-El servicio consulta Discover movie y tv en paralelo: géneros OR (`|`), IDs TV convertidos y sin duplicados, idioma es-MX, popularidad descendente, al menos 200 votos. Cada consulta tiene timeout de 8000 ms, incluida la lectura del JSON. Los géneros por emoción están en [emociones-generos.md](emociones-generos.md); Asco conserva documental/drama hasta aprobación del equipo.
+El servicio consulta Discover movie y tv en paralelo: géneros OR (`|`), IDs TV convertidos y sin duplicados, idioma es-MX, popularidad descendente, al menos 200 votos. Cada consulta tiene timeout de 8000 ms, incluida la lectura del JSON. Los géneros por emoción están en [emociones-generos.md](emociones-generos.md); el cambio aprobado de Asco usa Comedia/Aventura (`35|12`) en películas y Comedia/Acción y aventura (`35|10759`) en series.
 
 Se guarda únicamente userId, moodEntryId, tmdbId, mediaType, title y genres para las estadísticas, antes de responder. Repetir un GET vuelve a registrar lo mostrado. Un error de un catálogo impide guardar resultados parciales; si falla la persistencia tampoco se responde éxito. Fallos HTTP de TMDB (incluidos 401, 429 y 5xx), JSON inválido, red o timeout conservan el 500 general. Token del servidor ausente o vacío: 503 `{"error":"Servicio de recomendaciones no configurado"}`. No hay fallback al catálogo simulado del frontend.
 
