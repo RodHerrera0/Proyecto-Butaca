@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma.js'
 import { requireAuth } from '../middleware/auth.js'
+import { recommendationsQuerySchema } from '../schemas/api.js'
 
 export const recommendationsRouter = Router()
 
@@ -65,13 +66,15 @@ recommendationsRouter.use(requireAuth)
 
 // Devuelve recomendaciones para una emoción y guarda lo que se muestra
 recommendationsRouter.get('/', async (req, res) => {
-  const emocion = String(req.query.mood ?? '')
-  const generos = GENEROS_POR_EMOCION[emocion]
-  if (!generos) {
-    return res.status(400).json({ error: 'Emoción no válida' })
+  const parsed = recommendationsQuerySchema.safeParse(req.query)
+  if (!parsed.success) {
+    const error = parsed.error.issues.some((issue) => issue.path[0] === 'mood')
+      ? 'Emoción no válida' : parsed.error.flatten()
+    return res.status(400).json({ error })
   }
+  const generos = GENEROS_POR_EMOCION[parsed.data.mood]
 
-  const moodEntryId = req.query.moodId ? String(req.query.moodId) : null
+  const moodEntryId = parsed.data.moodId ?? null
   if (moodEntryId) {
     const existe = await prisma.moodEntry.findFirst({
       where: { id: moodEntryId, userId: req.user.id },

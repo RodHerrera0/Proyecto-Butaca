@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { requireAuth } from '../middleware/auth.js'
+import { favoriteParamsSchema } from '../schemas/api.js'
 
 export const favoritesRouter = Router()
 
@@ -48,8 +49,12 @@ favoritesRouter.post('/', async (req, res) => {
 
 // Borra una favorita, solo si pertenece al usuario en sesión
 favoritesRouter.delete('/:id', async (req, res) => {
+  const parsed = favoriteParamsSchema.safeParse(req.params)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
   const result = await prisma.favorite.deleteMany({
-    where: { id: req.params.id, user: { authId: req.auth.id } },
+    where: { id: parsed.data.id, user: { authId: req.auth.id } },
   })
   if (result.count === 0) {
     return res.status(404).json({ error: 'No encontrada' })
