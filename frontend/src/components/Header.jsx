@@ -1,6 +1,7 @@
 import { ChevronDown, LogIn, LogOut, Moon, Sparkles, Sun, User } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useSesion } from '../lib/sesion.js'
 import { useTema } from '../lib/tema.js'
 import LogoButaca from './LogoButaca.jsx'
 import './Header.css'
@@ -11,8 +12,9 @@ const BOLETOS = [
   { ruta: '/tablero', texto: 'Tablero' },
 ]
 
-// Placeholder: el usuario real llegará con el login de Supabase.
+// Menú del usuario: con sesión muestra su nombre y permite cerrarla.
 function MenuUsuario() {
+  const { usuario, salir } = useSesion()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef(null)
   const botonRef = useRef(null)
@@ -49,20 +51,36 @@ function MenuUsuario() {
         onClick={() => setAbierto((valor) => !valor)}
       >
         <span className="menu-usuario__avatar" aria-hidden="true">
-          <User size={18} />
+          {usuario?.avatar ? <img src={usuario.avatar} alt="" referrerPolicy="no-referrer" /> : <User size={18} />}
         </span>
         <ChevronDown className="menu-usuario__flecha" size={16} aria-hidden="true" />
       </button>
       {abierto && (
         <div id={idMenu} className="menu-usuario__panel">
-          <p className="menu-usuario__nombre">Usuario invitado</p>
-          <p className="menu-usuario__detalle">Inicia sesión para guardar tu historial.</p>
-          <Link to="/login" className="menu-usuario__opcion" onClick={() => setAbierto(false)}>
-            <LogIn size={16} aria-hidden="true" /> Iniciar sesión
-          </Link>
-          <button type="button" className="menu-usuario__opcion" disabled>
-            <LogOut size={16} aria-hidden="true" /> Cerrar sesión
-          </button>
+          {usuario ? (
+            <>
+              <p className="menu-usuario__nombre">{usuario.nombre}</p>
+              <p className="menu-usuario__detalle">{usuario.correo}</p>
+              <button
+                type="button"
+                className="menu-usuario__opcion"
+                onClick={() => {
+                  setAbierto(false)
+                  salir()
+                }}
+              >
+                <LogOut size={16} aria-hidden="true" /> Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="menu-usuario__nombre">Usuario invitado</p>
+              <p className="menu-usuario__detalle">Inicia sesión para guardar tu historial.</p>
+              <Link to="/login" className="menu-usuario__opcion" onClick={() => setAbierto(false)}>
+                <LogIn size={16} aria-hidden="true" /> Iniciar sesión
+              </Link>
+            </>
+          )}
         </div>
       )}
     </div>
