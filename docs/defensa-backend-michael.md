@@ -40,7 +40,7 @@ Verificación final local: backend 8 archivos y 76 pruebas aprobadas; frontend 1
 ## Pendientes externos antes de la presentación
 
 - #5: Michael obtiene/configura su token local y acuerda con Julio un canal privado; no se comparte en este repositorio. Código y pruebas de configuración terminados. Ver [tmdb-configuracion.md](tmdb-configuracion.md).
-- #10: el equipo aprueba el mapeo definitivo, en especial Asco (documental/drama). Las siete asignaciones se conservaron y probaron; eso no equivale a aprobar su pertinencia editorial.
+- #10: cambio de Asco a Comedia/Aventura aprobado por Rodrigo y confirmado por Michael; películas `35|12`, series `35|10759`. Las otras seis asignaciones se conservan. La comprobación de títulos reales sigue pendiente de credenciales; la aprobación editorial ya está confirmada.
 - #44: sustituir el dominio de ejemplo en FRONTEND_URL por el dominio real de Vercel y comprobar preflight en el despliegue.
 - Verificación manual con Supabase/PostgreSQL/TMDB reales, migraciones aplicadas y sesión del frontend. No se ejecutan migraciones ni se supone una conexión real a partir de mocks.
 - Revisar el PR hacia develop y comprobar CI; congelación el 8 de noviembre y presentación el martes 10 de noviembre de 2026.

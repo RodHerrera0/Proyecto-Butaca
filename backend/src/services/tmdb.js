@@ -7,7 +7,7 @@ const GENEROS_POR_EMOCION = {
   sad: [10751, 35],
   angry: [28, 12],
   fearful: [16, 10751],
-  disgusted: [99, 18],
+  disgusted: [35, 12],
   surprised: [878, 9648],
 }
 

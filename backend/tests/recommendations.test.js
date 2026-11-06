@@ -62,7 +62,7 @@ describe('GET /api/recommendations', () => {
     ['sad', '10751|35', '10751|35'],
     ['angry', '28|12', '10759'],
     ['fearful', '16|10751', '16|10751'],
-    ['disgusted', '99|18', '99|18'],
+    ['disgusted', '35|12', '35|10759'],
     ['surprised', '878|9648', '10765|9648'],
   ])('consulta géneros OR y sin duplicados para %s', async (mood, movie, tv) => {
     fetch.mockResolvedValue(respuestaTMDB([]))

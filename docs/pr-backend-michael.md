@@ -14,7 +14,7 @@ Closes #43
 Relacionados y pendientes, sin cierre automático:
 
 - #5: obtener/configurar y compartir la credencial por un canal privado. La configuración de código está terminada; no se ha validado una credencial real.
-- #10: aprobación editorial del mapeo, especialmente Asco (se conserva documental/drama).
+- #10: actualización posterior al PR #62: Rodrigo aprobó y Michael confirmó Asco como Comedia/Aventura (`35|12` en películas y `35|10759` en series). La aprobación editorial ya está confirmada; queda por comprobar el catálogo con credenciales reales.
 - #44: configurar el dominio real de Vercel y verificar el despliegue.
 
 ## ¿Cómo se probó?
