@@ -57,6 +57,9 @@ app.use('/api/recommendations', recommendationsRouter)
 app.use('/api/dashboard', dashboardRouter)
 
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'JSON no válido' })
+  }
   if (err.code === 'CORS_ORIGIN_DENIED') {
     return res.status(403).json({ error: 'Origen no permitido' })
   }

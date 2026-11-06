@@ -47,9 +47,18 @@ export async function deleteFavorite(req, res) {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() })
   }
-  const result = await prisma.favorite.deleteMany({
-    where: { id: parsed.data.id, user: { authId: req.auth.id } },
-  })
+  let result
+  try {
+    result = await prisma.favorite.deleteMany({
+      where: { id: parsed.data.id, user: { authId: req.auth.id } },
+    })
+  } catch (err) {
+    // Prisma usa P2023 cuando PostgreSQL rechaza el formato UUID del parámetro.
+    if (err.code === 'P2023') {
+      return res.status(400).json({ error: 'Identificador no válido' })
+    }
+    throw err
+  }
   if (result.count === 0) {
     return res.status(404).json({ error: 'No encontrada' })
   }

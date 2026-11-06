@@ -71,4 +71,19 @@ describe('Validación de entradas API', () => {
     expect(res.status).toBe(404)
     expect(prisma.favorite.deleteMany).not.toHaveBeenCalled()
   })
+
+  it('el UUID de favorita rechazado por Prisma produce 400 y no 500', async () => {
+    prisma.favorite.deleteMany.mockRejectedValueOnce({ code: 'P2023' })
+    const res = await request(app).delete('/api/favorites/no-es-uuid')
+    expect(res.status).toBe(400)
+    expect(res.body).toEqual({ error: 'Identificador no válido' })
+  })
+
+  it('JSON malformado produce 400 sin mostrar el body ni un stack', async () => {
+    const res = await request(app).post('/api/favorites')
+      .set('Content-Type', 'application/json').send('{"title":')
+    expect(res.status).toBe(400)
+    expect(res.body).toEqual({ error: 'JSON no válido' })
+    expect(prisma.favorite.deleteMany).not.toHaveBeenCalled()
+  })
 })
