@@ -6,7 +6,7 @@ import SelectorIntencion from '../components/SelectorIntencion.jsx'
 import { animoSimulado } from '../lib/simulacion.js'
 import './Deteccion.css'
 
-export default function Deteccion({ animo, onAnimo, consentimiento }) {
+export default function Deteccion({ animo, onAnimo, onResultado, consentimiento }) {
   const [parametros] = useSearchParams()
   const simular = parametros.get('simular')
   const simulado = animoSimulado(simular)
@@ -20,7 +20,7 @@ export default function Deteccion({ animo, onAnimo, consentimiento }) {
 
   // Un nuevo resultado conserva lo que se eligió hacer con el ánimo
   function guardarResultado(resultado) {
-    onAnimo({ ...resultado, intencion: animo?.intencion ?? 'mantener' })
+    onResultado({ ...resultado, intencion: animo?.intencion ?? 'mantener' })
   }
 
   return (
