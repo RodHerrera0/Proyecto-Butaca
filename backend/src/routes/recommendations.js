@@ -73,6 +73,10 @@ recommendationsRouter.get('/', async (req, res) => {
     }
   }
 
+  if (!process.env.TMDB_API_KEY?.trim()) {
+    return res.status(503).json({ error: 'Servicio de recomendaciones no configurado' })
+  }
+
   const [peliculas, series] = await Promise.all([
     buscar('movie', generos),
     buscar('tv', generos.map((g) => GENEROS_TV[g] ?? g)),

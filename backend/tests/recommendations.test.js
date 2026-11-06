@@ -33,9 +33,22 @@ const respuestaTMDB = (results) => ({ ok: true, status: 200, json: async () => (
 describe('GET /api/recommendations', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubEnv('TMDB_API_KEY', 'token-simulado-sin-acceso-real')
     vi.stubGlobal('fetch', vi.fn())
   })
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
+  it.each([undefined, '', '   '])('controla credencial ausente o vacía (%s)', async (token) => {
+    vi.stubEnv('TMDB_API_KEY', token)
+    const res = await request(app).get('/api/recommendations?mood=happy')
+    expect(res.status).toBe(503)
+    expect(res.body).toEqual({ error: 'Servicio de recomendaciones no configurado' })
+    expect(fetch).not.toHaveBeenCalled()
+    expect(prisma.recommendation.createMany).not.toHaveBeenCalled()
+  })
 
   it('rechaza una emoción no válida con 400', async () => {
     const res = await request(app).get('/api/recommendations?mood=tired')
@@ -60,6 +73,7 @@ describe('GET /api/recommendations', () => {
     const res = await request(app).get('/api/recommendations?mood=happy')
 
     expect(res.status).toBe(200)
+    expect(fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer token-simulado-sin-acceso-real')
     expect(res.body).toHaveLength(2)
     expect(res.body[0]).toMatchObject({ tmdbId: 550, mediaType: 'MOVIE', title: 'Fight Club', year: 1999 })
     expect(res.body[1]).toMatchObject({ tmdbId: 456, mediaType: 'TV', title: 'Los Simpson', year: 1989 })
