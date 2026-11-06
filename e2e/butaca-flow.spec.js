@@ -37,10 +37,13 @@ test.describe('Batería E2E Completa - Proyecto Butaca', () => {
   test('5. Debería permitir interactuar con los chips de filtro de ánimo', async ({ page }) => {
     await page.goto('/recomendaciones');
     const filtroHappy = page.locator('[data-testid="filtro-animo-happy"]');
-    if (await filtroHappy.isVisible()) {
-      await filtroHappy.click();
-      await expect(filtroHappy).toHaveClass(/active|seleccionado/i);
-    }
+    
+    // Esperar a que el chip sea visible en el DOM antes de interactuar
+    await filtroHappy.waitFor({ state: 'visible' });
+    await filtroHappy.click();
+    
+    // Validar mediante el atributo de accesibilidad aria-pressed
+    await expect(filtroHappy).toHaveAttribute('aria-pressed', 'true');
   });
 
 });

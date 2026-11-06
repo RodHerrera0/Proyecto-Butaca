@@ -1,14 +1,14 @@
-name: CI/CD Pipeline - Butaca
+name: CI
 
 on:
   push:
-    branches: [ main, develop, feature/** ]
+    branches: [main, develop, 'feature/**']
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
-  backend-qa:
-    name: Backend Tests & Prisma
+  backend:
+    name: Backend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -17,38 +17,46 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: lts/*
+          cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - name: Generar cliente Prisma
-        run: npx prisma generate --config prisma7.config.ts
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL_TEST || 'postgresql://dummy:dummy@localhost:5432/dummy' }}
-      - name: Ejecutar pruebas del Backend
-        run: npm run test
-        env:
-          NODE_ENV: test
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      - run: npm test
 
-  frontend-e2e:
-    name: Frontend Playwright E2E
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  e2e:
+    name: E2E
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          node-version: lts/*
+      - run: npm ci
       - run: npm ci
         working-directory: frontend
-      - name: Instalar dependencias y navegadores Playwright
-        run: |
-          npm install -D @playwright/test
-          npx playwright install --with-deps chromium
-      - name: Ejecutar pruebas E2E
-        run: npx playwright test
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
         env:
           CI: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reporte-playwright
+          path: playwright-report/
+          retention-days: 7
