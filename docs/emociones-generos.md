@@ -1,6 +1,6 @@
 # Expresiones faciales y géneros de TMDB
 
-Issue #9. Revisión del 4 de noviembre de 2026 sobre `docs/luis`, base `0cb87c9`. La tabla principal describe `backend/src/routes/recommendations.js`; no sustituye su lógica por la propuesta documental anterior. Michael Gutiérrez debe validar las decisiones definitivas.
+Issue #9. Documento original revisado el 4 de noviembre de 2026 sobre `docs/luis`, base `0cb87c9`; actualizado con las correcciones del 5 de noviembre. La tabla principal describe `backend/src/services/tmdb.js`, invocado desde `controllers/recommendations.js`; no sustituye su lógica por la propuesta documental anterior. Michael Gutiérrez debe validar las decisiones definitivas.
 
 ## Qué representa el resultado
 
