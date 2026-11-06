@@ -10,7 +10,7 @@ describe('Pruebas de Integración Adicionales - Proyecto Butaca', () => {
 
   it('Debería retornar un código de error al consultar recomendaciones con parámetros no válidos', async () => {
     const response = await request(app)
-      .get('/api/recomendaciones?animo=parametro_invalido_xyz');
+      .get('/api/recommendations?mood=parametro_invalido_xyz');
     
     expect(response.status).toBeGreaterThanOrEqual(400);
   });
