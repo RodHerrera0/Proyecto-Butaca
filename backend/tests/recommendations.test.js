@@ -56,6 +56,81 @@ describe('GET /api/recommendations', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  it.each([
+    ['neutral', '12|35', '10759|35'],
+    ['happy', '35|16', '35|16'],
+    ['sad', '10751|35', '10751|35'],
+    ['angry', '28|12', '10759'],
+    ['fearful', '16|10751', '16|10751'],
+    ['disgusted', '99|18', '99|18'],
+    ['surprised', '878|9648', '10765|9648'],
+  ])('consulta géneros OR y sin duplicados para %s', async (mood, movie, tv) => {
+    fetch.mockResolvedValue(respuestaTMDB([]))
+    const res = await request(app).get('/api/recommendations').query({ mood })
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual([])
+    expect(prisma.recommendation.createMany).not.toHaveBeenCalled()
+    const urls = fetch.mock.calls.map(([url]) => new URL(url))
+    expect(urls.map((url) => url.pathname)).toEqual(['/3/discover/movie', '/3/discover/tv'])
+    expect(urls.map((url) => url.searchParams.get('with_genres'))).toEqual([movie, tv])
+    for (const url of urls) {
+      expect(url.searchParams.get('language')).toBe('es-MX')
+      expect(url.searchParams.get('sort_by')).toBe('popularity.desc')
+      expect(url.searchParams.get('vote_count.gte')).toBe('200')
+    }
+  })
+
+  it.each([401, 429, 500])('controla HTTP %s de TMDB sin guardar resultados parciales', async (status) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      fetch.mockResolvedValue({ ok: false, status })
+      const res = await request(app).get('/api/recommendations?mood=happy')
+      expect(res.status).toBe(500)
+      expect(res.body).toEqual({ error: 'Error interno' })
+      expect(prisma.recommendation.createMany).not.toHaveBeenCalled()
+    } finally { log.mockRestore() }
+  })
+
+  it('limita a cinco películas y cinco series', async () => {
+    fetch.mockResolvedValueOnce(respuestaTMDB(Array(7).fill(peliculaTMDB)))
+      .mockResolvedValueOnce(respuestaTMDB(Array(8).fill(serieTMDB)))
+    const res = await request(app).get('/api/recommendations?mood=happy')
+    expect(res.status).toBe(200)
+    expect(res.body.map((item) => item.mediaType)).toEqual([
+      ...Array(5).fill('MOVIE'), ...Array(5).fill('TV'),
+    ])
+  })
+
+  it('cancela TMDB después de ocho segundos y no persiste resultados', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      fetch.mockImplementation((_url, { signal }) => new Promise((_resolve, reject) => {
+        signal.addEventListener('abort', () => reject(new Error('Solicitud cancelada')), { once: true })
+        queueMicrotask(() => vi.advanceTimersByTime(8000))
+      }))
+      const res = await request(app).get('/api/recommendations?mood=happy')
+      expect(res.status).toBe(500)
+      expect(res.body).toEqual({ error: 'Error interno' })
+      expect(fetch.mock.calls.every(([, options]) => options.signal.aborted)).toBe(true)
+      expect(prisma.recommendation.createMany).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+      log.mockRestore()
+    }
+  })
+
+  it('controla una respuesta malformada del proveedor', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      fetch.mockResolvedValue({ ok: true, json: async () => ({ results: null }) })
+      const res = await request(app).get('/api/recommendations?mood=happy')
+      expect(res.status).toBe(500)
+      expect(res.body).toEqual({ error: 'Error interno' })
+      expect(prisma.recommendation.createMany).not.toHaveBeenCalled()
+    } finally { log.mockRestore() }
+  })
+
   it('responde 404 si el ánimo no pertenece al usuario', async () => {
     prisma.moodEntry.findFirst.mockResolvedValue(null)
     const res = await request(app).get(

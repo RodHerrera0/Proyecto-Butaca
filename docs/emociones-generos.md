@@ -10,14 +10,14 @@ La API recibe las mismas claves en minúsculas. `POST /api/moods` las convierte 
 
 ## Mapeo implementado en el backend
 
-Los géneros se combinan con comas en `with_genres`: la consulta exige la concurrencia de los géneros, no una elección entre alternativas. Los nombres de la tabla son etiquetas en español para facilitar su lectura.
+Los géneros se combinan con barras (`|`) en `with_genres`: la consulta acepta cualquiera de los géneros (OR). Corrección del 5 de noviembre de 2026 para #10 y #43. Los nombres de la tabla son etiquetas en español para facilitar su lectura; los signos `+` enumeran alternativas.
 
 | Clave | Etiqueta | Películas: género e ID | Series: género e ID enviados | Lectura editorial del mapeo |
 |---|---|---|---|---|
 | `neutral` | Neutral | Aventura `12` + Comedia `35` | Acción y aventura `10759` + Comedia `35` | Historias dinámicas con humor cuando no hay una orientación expresiva marcada. |
 | `happy` | Feliz | Comedia `35` + Animación `16` | Comedia `35` + Animación `16` | Entretenimiento animado con humor. |
 | `sad` | Triste | Familia `10751` + Comedia `35` | Familia `10751` + Comedia `35` | Un tono familiar y cómico como alternativa de exploración. |
-| `angry` | Enojado | Acción `28` + Aventura `12` | Acción y aventura `10759`, `10759` | Relatos activos; ambos IDs de películas convergen en una categoría de televisión. |
+| `angry` | Enojado | Acción `28` + Aventura `12` | Acción y aventura `10759` | Relatos activos; ambos IDs de películas convergen en una categoría de televisión, sin duplicarla. |
 | `fearful` | Miedo | Animación `16` + Familia `10751` | Animación `16` + Familia `10751` | Opciones animadas y familiares en lugar de asociar miedo con terror por defecto. |
 | `disgusted` | Asco | Documental `99` + Drama `18` | Documental `99` + Drama `18` | Explorar contenido documental con componente dramático; combinación por revisar con Michael. |
 | `surprised` | Sorpresa | Ciencia ficción `878` + Misterio `9648` | Ciencia ficción y fantasía `10765` + Misterio `9648` | Historias de descubrimiento e intriga. |
@@ -28,21 +28,21 @@ La última columna interpreta la selección observada; no atribuye al equipo una
 
 La conversión implementada para series es `28 → 10759`, `12 → 10759` y `878 → 10765`. Los demás IDs usados se conservan. Acción y aventura es una categoría conjunta en televisión; Ciencia ficción y fantasía también agrupa conceptos separados en películas.
 
-Para `angry`, el código transforma `[28, 12]` en `[10759, 10759]` sin eliminar duplicados. La documentación conserva ese detalle; no presume cómo lo resolverá TMDB. Fantasía `14` no forma parte del mapeo actual, aunque se mencionara en la propuesta anterior.
+Para `angry`, el código transforma `[28, 12]` y elimina duplicados con `Set`, enviando `[10759]` para series. Fantasía `14` no forma parte del mapeo actual, aunque se mencionara en la propuesta anterior.
 
 El backend consulta `/discover/movie` y `/discover/tv` en paralelo con:
 
-- Géneros unidos por comas, con semántica AND.
+- Géneros unidos por barras, con semántica OR.
 - Idioma `es-MX`, orden `popularity.desc` y mínimo de 200 votos.
 - Hasta cinco resultados de cada respuesta, devueltos primero como películas y luego como series.
 
-Así puede devolver hasta diez títulos; no es un ranking único por calificación. Guarda los IDs de género que TMDB devuelve para cada título como cadenas de texto, junto con `MOVIE` o `TV`. Si TMDB responde con error, se propaga al manejador general de errores; no existe un catálogo alternativo en esa ruta. Los estados simulados de la interfaz son un mecanismo distinto.
+Así puede devolver hasta diez títulos; no es un ranking único por calificación. Guarda los IDs de género devueltos como cadenas de texto, junto con `MOVIE` o `TV`. Cada consulta tiene un máximo de ocho segundos, incluyendo lectura del JSON; se cancela con AbortController. Si ambos catálogos están vacíos responde `200 []` sin insertar recomendaciones. Un JSON sin arreglo `results` se trata como error del proveedor. Los errores TMDB se propagan al manejador general: HTTP 500 con `{"error":"Error interno"}`, sin persistir resultados parciales. No existe un catálogo alternativo en esa ruta.
 
 La documentación oficial distingue los catálogos de [películas](https://developer.themoviedb.org/reference/genre-movie-list) y [series](https://developer.themoviedb.org/reference/genre-tv-list). Las referencias de [Discover para películas](https://developer.themoviedb.org/reference/discover-movie) y [Discover para series](https://developer.themoviedb.org/reference/discover-tv) especifican que las comas combinan con AND y las barras con OR. No se hicieron consultas autenticadas al catálogo en esta revisión.
 
 ## Ánimo objetivo y grupos en el frontend
 
-La interfaz todavía filtra títulos de `mock-titulos.js`, sin consumir este mapeo. La opción «Acompañarlo» conserva la expresión; «Cambiarlo» aplica la transformación de `emocionObjetivo`:
+La integración de Rodrigo en `develop` ya consulta la API mediante `frontend/src/lib/api.js`; los datos simulados siguen disponibles en modo de demostración. La opción «Acompañarlo» conserva la expresión; «Cambiarlo» aplica la transformación de `emocionObjetivo`:
 
 | Expresión inicial | Objetivo al elegir «Cambiarlo» |
 |---|---|
@@ -62,6 +62,6 @@ En grupo se analizan hasta seis rostros y se suman las puntuaciones de cada expr
 
 La propuesta anterior incluía más alternativas por fila y no describía el filtro AND actual. Por ejemplo, para `disgusted` proponía comedia, aventura y fantasía; el backend utiliza documental y drama. Para `neutral` sugería drama y documental además de aventura, mientras la API combina aventura y comedia.
 
-Esas opciones quedan como recomendaciones para discutir, no como configuración implementada. Antes de cambiar el comportamiento, Michael debe validar si conviene conservar AND o utilizar OR, eliminar el ID duplicado en series y definir una respuesta cuando la intersección no produzca títulos. No se modificó código del backend.
+Esas opciones quedan como recomendaciones para discutir, no como configuración implementada. Se implementaron OR, deduplicación de series y respuesta vacía `200 []`, conforme a #10 y #43. Las siete asignaciones originales se conservan; cambiar Asco u otra asociación requiere aprobación del equipo y validación del catálogo real.
 
 También queda pendiente decidir cómo integrar la intención del frontend y el resultado grupal, y verificar la calidad del catálogo obtenido. El umbral `0.5` de `TinyFaceDetectorOptions` controla la detección del rostro, no una confianza mínima para aceptar una emoción.

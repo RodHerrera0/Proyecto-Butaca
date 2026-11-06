@@ -22,20 +22,28 @@ const GENEROS_TV = { 28: 10759, 12: 10759, 878: 10765 }
 
 async function buscar(tipo, generos) {
   const params = new URLSearchParams({
-    with_genres: generos.join(','),
+    with_genres: generos.join('|'),
     language: 'es-MX',
     sort_by: 'popularity.desc',
     'vote_count.gte': '200',
   })
-  const res = await fetch(`${TMDB}/discover/${tipo}?${params}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-      accept: 'application/json',
-    },
-  })
-  if (!res.ok) throw new Error(`TMDB respondió ${res.status}`)
-  const data = await res.json()
-  return data.results.slice(0, 5)
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
+  try {
+    const res = await fetch(`${TMDB}/discover/${tipo}?${params}`, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
+        accept: 'application/json',
+      },
+    })
+    if (!res.ok) throw new Error(`TMDB respondió ${res.status}`)
+    const data = await res.json()
+    if (!Array.isArray(data.results)) throw new Error('Respuesta TMDB inválida')
+    return data.results.slice(0, 5)
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 function normalizar(mediaType, item) {
@@ -49,7 +57,7 @@ function normalizar(mediaType, item) {
     overview: item.overview ?? null,
     year: fecha ? Number(fecha.slice(0, 4)) : null,
     voteAverage: item.vote_average ?? null,
-    genres: item.genre_ids.map(String),
+    genres: (item.genre_ids ?? []).map(String),
   }
 }
 
@@ -79,7 +87,7 @@ recommendationsRouter.get('/', async (req, res) => {
 
   const [peliculas, series] = await Promise.all([
     buscar('movie', generos),
-    buscar('tv', generos.map((g) => GENEROS_TV[g] ?? g)),
+    buscar('tv', [...new Set(generos.map((g) => GENEROS_TV[g] ?? g))]),
   ])
 
   const items = [
@@ -88,7 +96,7 @@ recommendationsRouter.get('/', async (req, res) => {
   ]
 
   // Solo guardamos lo que necesita el tablero
-  await prisma.recommendation.createMany({
+  if (items.length > 0) await prisma.recommendation.createMany({
     data: items.map((i) => ({
       userId: req.user.id,
       moodEntryId,
