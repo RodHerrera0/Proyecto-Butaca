@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "@vladmandic/face-api": "^1.7.15",
     "lucide-react": "^1.63.0",
     "react": "^19.3.1",

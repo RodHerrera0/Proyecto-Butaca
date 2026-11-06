@@ -5,11 +5,14 @@ import { BrowserRouter } from 'react-router-dom'
 import './estilos/tokens.css'
 import './estilos/base.css'
 import App from './App.jsx'
+import { SesionProvider } from './lib/SesionProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <SesionProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </SesionProvider>
   </StrictMode>,
 )
