@@ -1,0 +1,166 @@
+.grafica {
+  margin: var(--espacio-3) 0 0;
+}
+
+/* Colores de cada emoción (los mismos de los chips) */
+.grafica [data-emocion='happy'] { --color-marca: var(--emocion-feliz); }
+.grafica [data-emocion='sad'] { --color-marca: var(--emocion-triste); }
+.grafica [data-emocion='angry'] { --color-marca: var(--emocion-enojado); }
+.grafica [data-emocion='fearful'] { --color-marca: var(--emocion-miedo); }
+.grafica [data-emocion='surprised'] { --color-marca: var(--emocion-sorpresa); }
+.grafica [data-emocion='disgusted'] { --color-marca: var(--emocion-asco); }
+.grafica [data-emocion='neutral'] { --color-marca: var(--emocion-neutral); }
+
+/* ---------- Ánimo en el tiempo ---------- */
+.linea-animo__filas {
+  display: flex;
+  flex-direction: column;
+}
+
+.linea-animo__fila {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: var(--espacio-3);
+  height: 32px;
+}
+
+.linea-animo__etiqueta {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  text-align: right;
+}
+
+.linea-animo__pista {
+  position: relative;
+  height: 100%;
+  margin: 0 8px;
+  /* Línea guía tenue en cada fila */
+  background: linear-gradient(var(--color-borde), var(--color-borde)) center / 100% 1px no-repeat;
+}
+
+.linea-animo__punto {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-marca);
+  /* Anillo del color de la tarjeta para separar puntos cercanos */
+  box-shadow: 0 0 0 2px var(--color-superficie);
+  transform: translate(-50%, -50%);
+  transition: transform var(--duracion-media) var(--curva-suave);
+}
+
+.linea-animo__punto:hover {
+  transform: translate(-50%, -50%) scale(1.35);
+}
+
+.linea-animo__eje {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--espacio-2) 8px 0 calc(72px + var(--espacio-3) + 8px);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+}
+
+/* ---------- Barras ---------- */
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  padding: 0;
+  list-style: none;
+}
+
+.barras__fila {
+  display: grid;
+  grid-template-columns: minmax(72px, 38%) 1fr 3ch;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-sm);
+}
+
+.barras__etiqueta {
+  overflow: hidden;
+  color: var(--color-texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barras__pista {
+  height: 12px;
+}
+
+.barras__barra {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-marca, var(--color-dorado));
+}
+
+.barras__valor {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------- Películas vs. series ---------- */
+.reparticion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+.reparticion [data-tipo='MOVIE'] { --color-marca: var(--color-dorado); }
+.reparticion [data-tipo='TV'] { --color-marca: var(--emocion-triste); }
+
+.reparticion__numeros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espacio-3);
+}
+
+.reparticion__numero {
+  display: flex;
+  flex-direction: column;
+}
+
+.reparticion__cifra {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-3xl);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.reparticion__etiqueta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.reparticion__muestra {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--color-marca);
+}
+
+.reparticion__barra {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+}
+
+.reparticion__parte {
+  border-radius: 4px;
+  background: var(--color-marca);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linea-animo__punto {
+    transition: none;
+  }
+}

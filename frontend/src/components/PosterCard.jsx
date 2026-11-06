@@ -27,11 +27,19 @@ export default function PosterCard({ titulo, esFavorita = false, onToggleFavorit
       <div className="poster-card__info">
         <h3 className="poster-card__titulo">{titulo.titulo}</h3>
         <p className="poster-card__meta">
-          <span>{titulo.anio}</span>
-          <span aria-hidden="true">·</span>
+          {titulo.anio && (
+            <>
+              <span>{titulo.anio}</span>
+              <span aria-hidden="true">·</span>
+            </>
+          )}
           <span>{titulo.tipo === 'serie' ? 'Serie' : 'Película'}</span>
-          <span aria-hidden="true">·</span>
-          <Calificacion valor={titulo.calificacion} />
+          {titulo.calificacion != null && (
+            <>
+              <span aria-hidden="true">·</span>
+              <Calificacion valor={titulo.calificacion} />
+            </>
+          )}
         </p>
         {pie && <p className="poster-card__pie">{pie}</p>}
       </div>

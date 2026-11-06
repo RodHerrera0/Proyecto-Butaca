@@ -33,7 +33,8 @@ export default function Poster({ titulo, decorativo = false }) {
         {titulo.titulo}
       </span>
       <span className="poster__pie" aria-hidden="true">
-        {titulo.tipo === 'serie' ? 'Serie' : 'Película'} · {titulo.anio}
+        {titulo.tipo === 'serie' ? 'Serie' : 'Película'}
+        {titulo.anio && ` · ${titulo.anio}`}
       </span>
     </div>
   )
