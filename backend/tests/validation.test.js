@@ -16,6 +16,7 @@ vi.mock('../src/lib/prisma.js', () => ({ prisma: {
 } }))
 import { app } from '../src/app.js'
 import { prisma } from '../src/lib/prisma.js'
+import { deleteFavorite } from '../src/controllers/favorites.js'
 
 describe('Validación de entradas API', () => {
   beforeEach(() => {
@@ -55,6 +56,14 @@ describe('Validación de entradas API', () => {
 
   it('acepta el identificador no vacío sin imponer otro formato', () => {
     expect(favoriteParamsSchema.safeParse({ id: 'abc' }).success).toBe(true)
+  })
+
+  it.each([{}, { id: '' }, { id: 123 }])('el controlador responde 400 para params inválidos: %j', async (params) => {
+    const res = { status: vi.fn().mockReturnThis(), json: vi.fn() }
+    await deleteFavorite({ params, auth: { id: 'auth-1' } }, res)
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({ error: expect.any(Object) })
+    expect(prisma.favorite.deleteMany).not.toHaveBeenCalled()
   })
 
   it('sin segmento :id no existe la ruta DELETE y no llega a Prisma', async () => {
