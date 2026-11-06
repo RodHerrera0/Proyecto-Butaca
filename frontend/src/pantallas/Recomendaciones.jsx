@@ -1,4 +1,4 @@
-import { CloudOff, Popcorn, RefreshCw, Ticket } from 'lucide-react'
+import { CloudOff, FlaskConical, Popcorn, RefreshCw, Ticket } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Carrusel from '../components/Carrusel.jsx'
@@ -7,11 +7,18 @@ import Hero from '../components/Hero.jsx'
 import PosterCard from '../components/PosterCard.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { FILAS_MOCK, obtenerTitulosMock } from '../data/mock-titulos.js'
+import { tituloDesdeApi } from '../lib/adaptadores.js'
+import { obtenerRecomendaciones } from '../lib/api.js'
+import { HAY_BACKEND } from '../lib/config.js'
 import { EMOCIONES, emocionObjetivo, traducirEmocion } from '../lib/emociones.js'
 import { resumirConteo } from '../lib/grupo.js'
 import './Recomendaciones.css'
 
 const FILTROS = ['todos', ...Object.keys(EMOCIONES)]
+// Con datos reales cada chip pide al backend las recomendaciones de esa emoción,
+// así que no existe "Todos".
+const FILTROS_REALES = Object.keys(EMOCIONES)
+const EMOCION_INICIAL_REAL = 'happy'
 
 function porCalificacion(a, b) {
   return b.calificacion - a.calificacion
@@ -43,6 +50,25 @@ function ResumenFuncion({ animo, objetivo }) {
       <Ticket size={18} aria-hidden="true" />
       <span>
         {quien}: {plan}.
+      </span>
+    </p>
+  )
+}
+
+// Sin sesión se muestran títulos de ejemplo; se avisa para que no se confundan con TMDB.
+function AvisoDemostracion() {
+  return (
+    <p className="recomendaciones__demo" data-testid="aviso-demo">
+      <FlaskConical size={18} aria-hidden="true" />
+      <span>
+        Estás viendo títulos de ejemplo.{' '}
+        {HAY_BACKEND ? (
+          <>
+            <Link to="/login">Inicia sesión</Link> para ver recomendaciones reales.
+          </>
+        ) : (
+          'Esta versión todavía no está conectada al servidor.'
+        )}
       </span>
     </p>
   )
@@ -86,7 +112,7 @@ function Aviso({ Icono, titulo, testId, children }) {
   )
 }
 
-export default function Recomendaciones({ animo, favoritas = [], onToggleFavorita }) {
+export default function Recomendaciones({ animo, token, favoritas = [], onToggleFavorita }) {
   const [parametros] = useSearchParams()
   const simular = parametros.get('simular')
   const [estado, setEstado] = useState('cargando')
@@ -96,9 +122,19 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   const objetivo = animo ? emocionObjetivo(animo.emocion, animo.intencion) : 'todos'
   const [filtro, setFiltro] = useState(objetivo)
 
+  // Con sesión se usan las recomendaciones reales de TMDB (vía backend).
+  // `?simular=` fuerza los datos de ejemplo para las pruebas.
+  const modoReal = Boolean(token) && !simular
+  const filtroReal = filtro === 'todos' ? EMOCION_INICIAL_REAL : filtro
+  // Solo la emoción del ánimo detectado se enlaza con su registro del historial
+  const registroId = filtroReal === objetivo ? animo?.registroId : undefined
+
   useEffect(() => {
     let activo = true
-    obtenerTitulosMock({ simular })
+    const peticion = modoReal
+      ? obtenerRecomendaciones(token, { emocion: filtroReal, registroId }).then((lista) => lista.map(tituloDesdeApi))
+      : obtenerTitulosMock({ simular })
+    peticion
       .then((datos) => {
         if (!activo) return
         setTitulos(datos)
@@ -110,7 +146,7 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
     return () => {
       activo = false
     }
-  }, [simular, intento])
+  }, [modoReal, token, filtroReal, registroId, simular, intento])
 
   function reintentar() {
     setEstado('cargando')
@@ -118,16 +154,31 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
   }
 
   const idsFavoritas = new Set(favoritas.map((t) => t.id))
-  const filtrados = filtro === 'todos' ? titulos : titulos.filter((t) => t.animos.includes(filtro))
+  const filtroVisible = modoReal ? filtroReal : filtro
+  const filtrados =
+    modoReal || filtro === 'todos' ? titulos : titulos.filter((t) => t.animos.includes(filtro))
   const paraTuAnimo = [...filtrados].sort(porCalificacion)
+  const filasExtra = modoReal
+    ? [
+        { id: 'peliculas', titulo: 'Películas', items: filtrados.filter((t) => t.tipo === 'pelicula') },
+        { id: 'series', titulo: 'Series', items: filtrados.filter((t) => t.tipo === 'serie') },
+      ]
+    : FILAS_MOCK.map((fila) => ({ ...fila, items: filtrados.filter((t) => t.filas.includes(fila.id)) }))
   const filas = [
     {
       id: 'animo',
-      titulo: tituloFilaAnimo(filtro, animo, objetivo),
+      titulo: tituloFilaAnimo(filtroVisible, animo, objetivo),
       items: paraTuAnimo,
     },
-    ...FILAS_MOCK.map((fila) => ({ ...fila, items: filtrados.filter((t) => t.filas.includes(fila.id)) })),
+    ...filasExtra,
   ].filter((fila) => fila.items.length > 0)
+
+  function elegirFiltro(emocion) {
+    if (emocion === filtroVisible) return
+    // Con datos reales cambiar de emoción es una nueva petición
+    if (modoReal) setEstado('cargando')
+    setFiltro(emocion)
+  }
   const destacado = paraTuAnimo[0]
 
   function tarjeta(titulo) {
@@ -177,15 +228,16 @@ export default function Recomendaciones({ animo, favoritas = [], onToggleFavorit
           />
         )}
         <div className="pagina recomendaciones__filas">
+          {!modoReal && !simular && <AvisoDemostracion />}
           {animo && <ResumenFuncion animo={animo} objetivo={objetivo} />}
           <div className="recomendaciones__filtros" role="group" aria-label="Filtrar por ánimo">
-            {FILTROS.map((emocion) => (
+            {(modoReal ? FILTROS_REALES : FILTROS).map((emocion) => (
               <ChipAnimo
                 key={emocion}
                 emocion={emocion}
-                seleccionado={filtro === emocion}
+                seleccionado={filtroVisible === emocion}
                 testId={`filtro-animo-${emocion}`}
-                onClick={() => setFiltro(emocion)}
+                onClick={() => elegirFiltro(emocion)}
               />
             ))}
           </div>

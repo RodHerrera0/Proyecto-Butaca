@@ -32,11 +32,19 @@ export default function Hero({ titulo, etiqueta = 'Destacado para tu ánimo', es
             {titulo.titulo}
           </h2>
           <p className="hero__meta">
-            <span>{titulo.anio}</span>
-            <span aria-hidden="true">·</span>
+            {titulo.anio && (
+              <>
+                <span>{titulo.anio}</span>
+                <span aria-hidden="true">·</span>
+              </>
+            )}
             <span>{titulo.tipo === 'serie' ? 'Serie' : 'Película'}</span>
-            <span aria-hidden="true">·</span>
-            <span>{titulo.generos.join(', ')}</span>
+            {titulo.generos.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{titulo.generos.join(', ')}</span>
+              </>
+            )}
           </p>
           <Calificacion valor={titulo.calificacion} variante="estrellas" />
           <p id={idDetalles} className={`hero__sinopsis${detalles ? ' hero__sinopsis--completa' : ''}`}>
