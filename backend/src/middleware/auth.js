@@ -1,9 +1,9 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { prisma } from '../lib/prisma.js'
 
-const JWKS = createRemoteJWKSet(
-  new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`)
-)
+const JWKS = process.env.SUPABASE_URL 
+  ? createRemoteJWKSet(new URL(`${process.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`))
+  : null
 
 export async function requireAuth(req, res, next) {
   const header = req.headers.authorization ?? ''
@@ -15,6 +15,9 @@ export async function requireAuth(req, res, next) {
 
   let payload
   try {
+    if (!JWKS) {
+      return res.status(401).json({ error: 'Token inválido' })
+    }
     ({ payload } = await jwtVerify(token, JWKS, { audience: 'authenticated' }))
   } catch {
     return res.status(401).json({ error: 'Token inválido' })
