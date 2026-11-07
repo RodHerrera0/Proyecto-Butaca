@@ -2,7 +2,6 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import { requireAuth } from './middleware/auth.js'
-import { prisma } from './lib/prisma.js'
 import { favoritesRouter } from './routes/favorites.js'
 import { moodsRouter } from './routes/moods.js'
 import { recommendationsRouter } from './routes/recommendations.js'
@@ -13,7 +12,16 @@ import rateLimit from 'express-rate-limit'
 export const app = express()
 
 app.use(helmet())
-app.use(cors({ origin: process.env.FRONTEND_URL }))
+app.use(cors({
+  origin(origin, callback) {
+    const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:5173')
+      .split(',').map((value) => value.trim()).filter(Boolean)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+    const error = new Error('Origen no permitido')
+    error.code = 'CORS_ORIGIN_DENIED'
+    callback(error)
+  },
+}))
 app.use(express.json())
 
 const limiteGeneral = rateLimit({
@@ -49,6 +57,12 @@ app.use('/api/recommendations', recommendationsRouter)
 app.use('/api/dashboard', dashboardRouter)
 
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'JSON no válido' })
+  }
+  if (err.code === 'CORS_ORIGIN_DENIED') {
+    return res.status(403).json({ error: 'Origen no permitido' })
+  }
   console.error(err)
   res.status(500).json({ error: 'Error interno' })
 })
