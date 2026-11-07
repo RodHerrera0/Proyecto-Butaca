@@ -34,9 +34,10 @@ describe('rutas', () => {
     ['/favoritas', 'Favoritas'],
     ['/tablero', 'Tablero'],
     ['/no-existe', 'Página no encontrada'],
-  ])('%s muestra "%s"', (ruta, titulo) => {
+  ])('%s muestra "%s" y lo usa como título de la pestaña', (ruta, titulo) => {
     renderEn(ruta)
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(titulo)
+    expect(document.title).toBe(`${titulo} · Butaca`)
   })
 
   it('/ redirige a /login', () => {

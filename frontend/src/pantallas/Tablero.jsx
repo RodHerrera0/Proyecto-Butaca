@@ -156,6 +156,7 @@ export default function Tablero({ token }) {
 
   return (
     <div className="pagina tablero">
+      <title>Tablero · Butaca</title>
       <header>
         <h1 className="pagina-titulo">Tablero</h1>
         <p className="pagina-descripcion">Tu ánimo y tus recomendaciones de un vistazo.</p>

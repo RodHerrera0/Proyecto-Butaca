@@ -267,6 +267,7 @@ export default function Recomendaciones({ animo, token, favoritas = [], onToggle
 
   return (
     <div className="recomendaciones">
+      <title>Recomendaciones · Butaca</title>
       <h1 className="solo-lectores">Recomendaciones</h1>
       {contenido}
     </div>

@@ -25,6 +25,7 @@ export default function Deteccion({ animo, onAnimo, onResultado, consentimiento 
 
   return (
     <div className="pagina deteccion">
+      <title>¿Cómo te sientes? · Butaca</title>
       <header className="deteccion__cabecera">
         <p className="deteccion__etiqueta">Cabina de ánimo</p>
         <h1 className="pagina-titulo">¿Cómo te sientes?</h1>
