@@ -38,6 +38,7 @@ export default function Consentimiento({ onDecidir }) {
 
   return (
     <div className="pagina consentimiento">
+      <title>Uso de la cámara · Butaca</title>
       <section className="consentimiento__tarjeta tarjeta" aria-labelledby="consentimiento-titulo">
         <LogoButaca tamano={40} className="consentimiento__logo" />
         <h1 id="consentimiento-titulo" className="consentimiento__titulo">

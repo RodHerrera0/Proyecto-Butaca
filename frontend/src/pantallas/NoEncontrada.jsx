@@ -4,6 +4,7 @@ import LogoButaca from '../components/LogoButaca.jsx'
 export default function NoEncontrada() {
   return (
     <div className="pagina no-encontrada">
+      <title>Página no encontrada · Butaca</title>
       <LogoButaca tamano={56} className="no-encontrada__logo" />
       <h1 className="pagina-titulo">Página no encontrada</h1>
       <p className="pagina-descripcion">Esta sala está vacía. Volvamos a la cartelera.</p>

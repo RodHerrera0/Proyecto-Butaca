@@ -29,6 +29,7 @@ export default function Login() {
 
   return (
     <div className="login">
+      <title>Iniciar sesión · Butaca</title>
       <div className="login__fondo" aria-hidden="true">
         {POSTERS_FONDO.map((titulo, i) => (
           <div key={`${titulo.id}-${i}`} className="login__poster">
