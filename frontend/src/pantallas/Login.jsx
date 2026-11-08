@@ -1,16 +1,35 @@
-import { LogIn } from 'lucide-react'
+import { ArrowRight, LogIn } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import LogoButaca from '../components/LogoButaca.jsx'
 import Poster from '../components/Poster.jsx'
 import { TITULOS_MOCK } from '../data/mock-titulos.js'
+import { useSesion } from '../lib/sesion.js'
 import './Login.css'
 
 // Pósters de fondo: solo decoración, se repiten para llenar pantallas grandes.
 const POSTERS_FONDO = [...TITULOS_MOCK, ...TITULOS_MOCK].slice(0, 32)
 
 export default function Login() {
+  const { usuario, disponible, entrar } = useSesion()
+  const [enviando, setEnviando] = useState(null)
+  const [error, setError] = useState(null)
+
+  // Supabase redirige a Google o GitHub; al volver se continúa en el consentimiento.
+  async function entrarCon(proveedor) {
+    setError(null)
+    setEnviando(proveedor)
+    try {
+      await entrar(proveedor)
+    } catch {
+      setError('No pudimos conectar con el inicio de sesión. Inténtalo de nuevo.')
+      setEnviando(null)
+    }
+  }
+
   return (
     <div className="login">
+      <title>Iniciar sesión · Butaca</title>
       <div className="login__fondo" aria-hidden="true">
         {POSTERS_FONDO.map((titulo, i) => (
           <div key={`${titulo.id}-${i}`} className="login__poster">
@@ -25,19 +44,50 @@ export default function Login() {
           Iniciar sesión
         </h1>
         <p className="login__texto">Tu butaca te espera. Entra para guardar tus favoritas y ver tu ánimo en el tiempo.</p>
-        {/* Placeholder: el login real con Supabase es otra tarea. */}
-        <div className="login__botones">
-          <button type="button" className="boton boton-secundario" disabled data-testid="boton-login-google">
-            <LogIn size={18} aria-hidden="true" /> Entrar con Google
-          </button>
-          <button type="button" className="boton boton-secundario" disabled data-testid="boton-login-github">
-            <LogIn size={18} aria-hidden="true" /> Entrar con GitHub
-          </button>
-        </div>
-        <p className="login__nota">El inicio de sesión estará disponible pronto.</p>
-        <Link to="/consentimiento" className="login__continuar">
-          Continuar sin iniciar sesión
-        </Link>
+        {usuario ? (
+          <>
+            <p className="login__nota" data-testid="sesion-iniciada">
+              Sesión iniciada como <strong>{usuario.nombre}</strong>.
+            </p>
+            <Link to="/consentimiento" className="boton boton-primario">
+              Continuar <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="login__botones">
+              <button
+                type="button"
+                className="boton boton-secundario"
+                disabled={!disponible || enviando !== null}
+                data-testid="boton-login-google"
+                onClick={() => entrarCon('google')}
+              >
+                <LogIn size={18} aria-hidden="true" /> {enviando === 'google' ? 'Conectando…' : 'Entrar con Google'}
+              </button>
+              <button
+                type="button"
+                className="boton boton-secundario"
+                disabled={!disponible || enviando !== null}
+                data-testid="boton-login-github"
+                onClick={() => entrarCon('github')}
+              >
+                <LogIn size={18} aria-hidden="true" /> {enviando === 'github' ? 'Conectando…' : 'Entrar con GitHub'}
+              </button>
+            </div>
+            {error && (
+              <p className="login__nota" role="alert" data-testid="estado-error">
+                {error}
+              </p>
+            )}
+            {!disponible && (
+              <p className="login__nota">El inicio de sesión no está configurado en esta versión (modo demostración).</p>
+            )}
+            <Link to="/consentimiento" className="login__continuar">
+              Continuar sin iniciar sesión
+            </Link>
+          </>
+        )}
       </section>
     </div>
   )

@@ -28,6 +28,7 @@ function SalaVacia() {
 export default function Favoritas({ favoritas = [], onToggleFavorita }) {
   return (
     <div className="pagina favoritas">
+      <title>Favoritas · Butaca</title>
       <header className="favoritas__cabecera">
         <h1 className="pagina-titulo">Favoritas</h1>
         {favoritas.length > 0 && (
