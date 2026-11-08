@@ -139,6 +139,77 @@ describe('DetectorEmocion', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('No detectamos un rostro')
   })
 
+  describe('con varias cámaras conectadas', () => {
+    const CAMARAS = [
+      { kind: 'videoinput', deviceId: 'laptop', label: 'Integrated Camera' },
+      { kind: 'videoinput', deviceId: 'webcam', label: 'Logitech C920' },
+      { kind: 'audioinput', deviceId: 'mic', label: 'Micrófono' },
+    ]
+
+    function streamDe(deviceId) {
+      const track = { stop: vi.fn(), getSettings: () => ({ deviceId }) }
+      return { track, stream: { getTracks: () => [track], getVideoTracks: () => [track] } }
+    }
+
+    beforeEach(() => {
+      localStorage.clear()
+      navigator.mediaDevices.enumerateDevices = vi.fn().mockResolvedValue(CAMARAS)
+    })
+
+    it('cambia a la webcam externa aunque el navegador abra la de la laptop', async () => {
+      const laptop = streamDe('laptop')
+      const webcam = streamDe('webcam')
+      getUserMedia.mockImplementation(({ video }) =>
+        Promise.resolve(video.deviceId?.exact === 'webcam' ? webcam.stream : laptop.stream),
+      )
+
+      render(<ConEstado />)
+      await screen.findByTestId('boton-analizar')
+
+      expect(getUserMedia).toHaveBeenLastCalledWith({ video: { deviceId: { exact: 'webcam' } }, audio: false })
+      expect(laptop.track.stop).toHaveBeenCalled()
+      expect(webcam.track.stop).not.toHaveBeenCalled()
+      expect(screen.getByTestId('selector-camara').value).toBe('webcam')
+    })
+
+    it('permite elegir otra cámara y la recuerda', async () => {
+      getUserMedia.mockImplementation(({ video }) => Promise.resolve(streamDe(video.deviceId?.exact ?? 'laptop').stream))
+
+      render(<ConEstado />)
+      await screen.findByTestId('boton-analizar')
+      fireEvent.change(screen.getByTestId('selector-camara'), { target: { value: 'laptop' } })
+      await screen.findByTestId('boton-analizar')
+
+      expect(getUserMedia).toHaveBeenLastCalledWith({ video: { deviceId: { exact: 'laptop' } }, audio: false })
+      expect(screen.getByTestId('selector-camara').value).toBe('laptop')
+      expect(localStorage.getItem('butaca-camara')).toBe('laptop')
+    })
+
+    it('si la cámara guardada ya no está, usa otra sin mostrar error', async () => {
+      localStorage.setItem('butaca-camara', 'desconectada')
+      getUserMedia.mockImplementation(({ video }) =>
+        video.deviceId?.exact === 'desconectada'
+          ? Promise.reject(Object.assign(new Error('no está'), { name: 'OverconstrainedError' }))
+          : Promise.resolve(streamDe(video.deviceId?.exact ?? 'laptop').stream),
+      )
+
+      render(<ConEstado />)
+      await screen.findByTestId('boton-analizar')
+
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(screen.getByTestId('selector-camara').value).toBe('webcam')
+    })
+  })
+
+  it('con una sola cámara no muestra el selector', async () => {
+    getUserMedia.mockResolvedValue(crearStreamFalso().stream)
+
+    render(<ConEstado />)
+    await screen.findByTestId('boton-analizar')
+
+    expect(screen.queryByTestId('selector-camara')).toBeNull()
+  })
+
   it('mantiene los data-testid de la cámara acordados con QA', async () => {
     getUserMedia.mockRejectedValue(Object.assign(new Error('denegado'), { name: 'NotAllowedError' }))
 

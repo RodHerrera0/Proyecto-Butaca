@@ -1,5 +1,12 @@
-import { Camera, LoaderCircle, ScanFace, TriangleAlert, User, Users, VideoOff } from 'lucide-react'
+import { Camera, LoaderCircle, ScanFace, TriangleAlert, User, Users, Video, VideoOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  camaraDeStream,
+  elegirCamaraPreferida,
+  guardarCamara,
+  leerCamaraGuardada,
+  listarCamaras,
+} from '../lib/camaras.js'
 import { MAXIMO_PERSONAS, cargarModelos, detectarAnimosGrupo, detectarEmocion } from '../lib/detector.js'
 import { EMOCIONES, MENSAJES_ANIMO, formatearConfianza } from '../lib/emociones.js'
 import { combinarAnimos, mensajeGrupo } from '../lib/grupo.js'
@@ -39,6 +46,16 @@ function tipoErrorCamara(error) {
   }
 }
 
+// Sin id, la cámara frontal que dé el navegador; con id, exactamente esa cámara
+function abrirCamara(id) {
+  const video = id ? { deviceId: { exact: id } } : { facingMode: 'user' }
+  return navigator.mediaDevices.getUserMedia({ video, audio: false })
+}
+
+function detenerStream(stream) {
+  stream.getTracks().forEach((track) => track.stop())
+}
+
 // Modo grupo: detecta a todas las personas frente a la cámara y combina sus
 // ánimos en uno solo. Devuelve null si no encontró a nadie.
 async function analizarGrupo(video) {
@@ -60,6 +77,9 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
   const [error, setError] = useState(null)
   // 'individual' (una sola cara) o 'grupo' (todas las caras del cuadro)
   const [modo, setModo] = useState('individual')
+  // Cámaras conectadas (solo se conocen después de dar el permiso)
+  const [camaras, setCamaras] = useState([])
+  const [camaraActual, setCamaraActual] = useState(null)
 
   const apagarCamara = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -67,7 +87,7 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
     if (videoRef.current) videoRef.current.srcObject = null
   }, [])
 
-  const encenderCamara = useCallback(async () => {
+  const encenderCamara = useCallback(async (idPedido = null) => {
     const intento = ++intentoRef.current
 
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -86,9 +106,17 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
     }
     if (intento !== intentoRef.current) return
 
+    // Cámara pedida: la que se eligió en el selector o, si no, la guardada
+    const pedida = idPedido ?? leerCamaraGuardada()
     let stream
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+      try {
+        stream = await abrirCamara(pedida)
+      } catch (e) {
+        // La cámara guardada ya no está conectada: se usa la que dé el navegador
+        if (!pedida || idPedido || !['OverconstrainedError', 'NotFoundError'].includes(e?.name)) throw e
+        stream = await abrirCamara(null)
+      }
     } catch (e) {
       if (intento !== intentoRef.current) return
       setError(tipoErrorCamara(e))
@@ -96,9 +124,33 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
       return
     }
     if (intento !== intentoRef.current) {
-      stream.getTracks().forEach((track) => track.stop())
+      detenerStream(stream)
       return
     }
+
+    // Con el permiso ya dado, el navegador muestra los nombres de las cámaras
+    const disponibles = await listarCamaras()
+    if (intento !== intentoRef.current) {
+      detenerStream(stream)
+      return
+    }
+    // Si el navegador abrió la integrada pero hay una webcam externa, se cambia a esa
+    const preferida = elegirCamaraPreferida(disponibles, pedida)
+    if (!idPedido && preferida && preferida !== camaraDeStream(stream)) {
+      try {
+        const otro = await abrirCamara(preferida)
+        detenerStream(stream)
+        stream = otro
+      } catch {
+        // Si no se puede abrir la externa, se sigue con la que ya funciona
+      }
+      if (intento !== intentoRef.current) {
+        detenerStream(stream)
+        return
+      }
+    }
+    setCamaras(disponibles)
+    setCamaraActual(camaraDeStream(stream))
 
     streamRef.current = stream
     const video = videoRef.current
@@ -124,6 +176,17 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
     setError(null)
     setFase('cargando')
     encenderCamara()
+  }
+
+  function cambiarCamara(evento) {
+    const id = evento.target.value
+    guardarCamara(id)
+    intentoRef.current++
+    apagarCamara()
+    setCamaraActual(id)
+    setError(null)
+    setFase('cargando')
+    encenderCamara(id)
   }
 
   async function analizar() {
@@ -213,6 +276,26 @@ export default function DetectorEmocion({ resultado, onResultado, usarCamara = f
             <p className="cabina__pista">Pónganse todos frente a la cámara (hasta {MAXIMO_PERSONAS} personas)</p>
           )}
         </div>
+      )}
+
+      {usarCamara && camaras.length > 1 && (fase === 'cargando' || camaraVisible) && (
+        <label className="cabina__selector-camara">
+          <Video size={18} aria-hidden="true" />
+          <span>Cámara</span>
+          <select
+            data-testid="selector-camara"
+            value={camaraActual ?? ''}
+            onChange={cambiarCamara}
+            disabled={fase !== 'lista'}
+          >
+            {camaraActual === null && <option value="">Cámara del navegador</option>}
+            {camaras.map((camara) => (
+              <option key={camara.id} value={camara.id}>
+                {camara.etiqueta}
+              </option>
+            ))}
+          </select>
+        </label>
       )}
 
       {usarCamara && (
