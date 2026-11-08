@@ -147,7 +147,30 @@
   font-size: var(--texto-sm);
 }
 
-.cabina__manual select {
+/* Selector de cámara (solo aparece si hay más de una conectada) */
+.cabina__selector-camara {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: 100%;
+  max-width: 420px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.cabina__selector-camara select {
+  flex: 1;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.cabina__selector-camara select:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.cabina__manual select,
+.cabina__selector-camara select {
   min-height: 44px;
   padding: 0 var(--espacio-10) 0 var(--espacio-4);
   border: 1px solid var(--color-borde-fuerte);
@@ -162,7 +185,8 @@
   cursor: pointer;
 }
 
-.cabina__manual select:hover {
+.cabina__manual select:hover,
+.cabina__selector-camara select:hover:not(:disabled) {
   border-color: var(--color-dorado-brillo);
 }
 
