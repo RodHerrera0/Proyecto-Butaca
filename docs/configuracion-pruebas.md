@@ -1,6 +1,6 @@
 # Configuración y pruebas
 
-Issue #39. Revisión del 4 de noviembre de 2026 sobre `docs/luis`, base `0cb87c9`. Los scripts se contrastaron con ambos `package.json`; los comandos de preparación se distinguen de las verificaciones realmente ejecutadas.
+Issue #39. Revisión original del 4 de noviembre de 2026; actualizada el 9 de noviembre sobre `develop` (`0fb9d4a`) con el frontend ya conectado, Playwright configurado y los resultados de esa fecha.
 
 ## Entorno e instalación
 
@@ -15,7 +15,7 @@ cd ../backend
 npm ci
 ```
 
-No existe paquete raíz. En PowerShell puede usarse `npm.cmd` cuando `npm.ps1` esté bloqueado. Esta revisión no instaló dependencias ni cambió archivos de bloqueo.
+El `package.json` de la raíz solo contiene Playwright para las pruebas E2E. En PowerShell puede usarse `npm.cmd` cuando `npm.ps1` esté bloqueado. En el backend, `npm ci` genera también el cliente de Prisma (`postinstall`).
 
 Preparar `frontend/.env` y `backend/.env` copiando los respectivos `.env.example` solo si el destino no existe. Completar valores de forma privada. No versionar esos archivos ni usar credenciales reales en evidencias.
 
@@ -41,11 +41,11 @@ Todas las variables `VITE_` son públicas y pueden quedar en la compilación env
 
 | Variable | Propósito previsto | Estado en el código |
 |---|---|---|
-| `VITE_API_URL` | URL de la API, por ejemplo `http://localhost:3000` | No consumida; debe acordarse si la base incluye `/api`. |
-| `VITE_SUPABASE_URL` | URL del proyecto para el cliente Supabase | No consumida; no existe cliente Auth integrado. |
-| `VITE_SUPABASE_ANON_KEY` | Clave pública del cliente Supabase | No consumida; nunca utilizar una clave de servicio o administrativa en su lugar. |
+| `VITE_API_URL` | URL base de la API sin `/api` ni `/` final, por ejemplo `http://localhost:3000` | Consumida por `lib/config.js` y `lib/api.js`. |
+| `VITE_SUPABASE_URL` | URL del proyecto para el cliente Supabase | Consumida por `lib/supabase.js` para el login con Google y GitHub. |
+| `VITE_SUPABASE_ANON_KEY` | Clave pública del cliente Supabase | Consumida por `lib/supabase.js`; nunca utilizar una clave de servicio o administrativa en su lugar. |
 
-Cambiar estas variables no conecta por sí solo las pantallas al backend. Cuando se incorporen, reiniciar Vite después de modificar el entorno. La seguridad de los datos no debe depender de ocultar una clave pública.
+Si falta cualquiera de las tres, la aplicación funciona en modo demostración con datos de ejemplo y lo indica en pantalla. Reiniciar Vite después de modificar el entorno; en Vercel, volver a desplegar. La seguridad de los datos no depende de ocultar la clave pública.
 
 ## Prisma y base de datos
 
@@ -77,7 +77,7 @@ Frontend desde `frontend/`:
 npm run dev
 ```
 
-Vite informa la URL efectiva; normalmente usa el puerto 5173. La interfaz puede recorrerse con datos simulados sin conectar servicios externos.
+Vite informa la URL efectiva; normalmente usa el puerto 5173. Con las variables `VITE_` completas y el backend levantado, la interfaz usa la cuenta, la API y TMDB; sin ellas, recorre el modo demostración. Para el login local, `http://localhost:5173/consentimiento` debe estar en las Redirect URLs de Supabase.
 
 Backend desde `backend/`, con configuración y base preparadas:
 
@@ -93,9 +93,9 @@ En otra terminal, una vez levantado el servidor:
 Invoke-RestMethod -Uri http://localhost:3000/health
 ```
 
-Se espera `status: ok`; la ruta no consulta la base ni TMDB. La comprobación HTTP real no se ejecutó en esta revisión.
+Se espera `status: ok`; la ruta no consulta la base ni TMDB. En la API publicada, `https://proyecto-butaca-dev.onrender.com/health` responde lo mismo.
 
-## Contratos que deberá consumir el frontend
+## Contratos que consume el frontend
 
 Todas las rutas `/api` listadas requieren `Authorization: Bearer <token de sesión>`. No copiar tokens a documentación ni capturas.
 
@@ -109,9 +109,9 @@ Todas las rutas `/api` listadas requieren `Authorization: Bearer <token de sesi�
 | `DELETE /api/favorites/:id` | Usa el ID del registro de favorita, no el ID TMDB. Responde 204 o 404 y limita por usuario. |
 | `GET /api/dashboard` | Devuelve `historial`, `porEmocion`, `porTipo` y `porGenero` del usuario. Cuenta recomendaciones registradas, no reproducciones ni títulos vistos. |
 
-La respuesta normalizada de recomendaciones contiene `tmdbId`, `mediaType`, `title`, `posterPath`, `overview`, `year`, `voteAverage` y `genres`. El frontend simulado utiliza nombres como `titulo`, `tipo`, `calificacion` y `guardadaEn`; hace falta adaptar los contratos.
+La respuesta normalizada de recomendaciones contiene `tmdbId`, `mediaType`, `title`, `posterPath`, `overview`, `year`, `voteAverage` y `genres`. `frontend/src/lib/adaptadores.js` la convierte a la forma de las tarjetas (`titulo`, `tipo`, `calificacion`, póster completo de TMDB y nombres de género) y conserva el `id` del registro de favorita para poder borrarla.
 
-El esquema de favoritas contempla sinopsis, año, calificación y géneros, pero el validador POST actual no admite esos campos como parte del contrato procesado. Debe confirmarse cómo conservar o reconstruirlos para la pantalla de favoritas. Tampoco hay campos persistidos para origen manual/cámara, intención de recomendación o participantes del grupo.
+Las favoritas se envían con `tmdbId`, `mediaType`, `title` y `posterPath`, que es lo que procesa el validador. No hay campos persistidos para origen manual/cámara, intención de recomendación o participantes del grupo.
 
 ## Pruebas automatizadas
 
@@ -143,9 +143,16 @@ No hay scripts de lint ni build en el backend.
 
 ## E2E y ayudas de simulación
 
-`e2e/` contiene únicamente `.gitkeep`. No hay configuración, dependencia ni script de Playwright; todavía no existe un procedimiento E2E ejecutable del proyecto.
+Playwright está configurado en la raíz (`package.json` y `playwright.config.js`) y `e2e/butaca-flow.spec.js` contiene 5 recorridos en Chromium: estado de carga, estado de error, detección simulada, botones de login y filtros por ánimo. Desde la raíz:
 
-La interfaz sí incluye ayudas para un futuro recorrido automatizado:
+```sh
+npm ci
+cd frontend && npm ci && cd ..
+npx playwright install chromium
+npx playwright test
+```
+
+Los recorridos usan estas rutas de simulación, que también sirven para demostrar sin cámara:
 
 | Ruta de frontend | Efecto implementado |
 |---|---|
@@ -154,22 +161,25 @@ La interfaz sí incluye ayudas para un futuro recorrido automatizado:
 | `/recomendaciones?simular=error` | Simula un error del catálogo local. |
 | `/recomendaciones?simular=vacio` | Devuelve una lista simulada vacía. |
 
-Estas rutas y los `data-testid` no equivalen a una suite E2E. Julio debe configurar Playwright y cubrir el recorrido con cuentas, API, persistencia y tablero cuando estén conectados. Separar las pruebas con cámara simulada de una comprobación con cámara real.
+Los recorridos E2E usan la simulación y no reemplazan la comprobación con cámara, cuenta y servicios reales, que se hizo en la aplicación publicada (#61).
 
-## CI y resultados de esta revisión
+## CI y resultados
 
-GitHub Actions ejecuta `npm ci` y `npm test` para ambos proyectos en pushes a `main`/`develop` y PR hacia esas ramas. No incluye lint, build, E2E, generación de cliente ni migraciones. El brief solicita pruebas en cada push; Julio debe revisar la cobertura de eventos de las ramas de trabajo.
+GitHub Actions ejecuta tres jobs en cada push a `main`, `develop` y `feature/**`, y en los PR hacia `main` y `develop`:
 
-| Comprobación del 4 de noviembre | Resultado observado |
+- **Backend:** `npm ci`, `npx prisma generate` y `npm test`.
+- **Frontend:** `npm ci` y `npm test`.
+- **E2E:** instala dependencias y Chromium, ejecuta `npx playwright test` y sube `reporte-playwright` como artefacto.
+
+Las ramas `main` y `develop` están protegidas: exigen que pasen Backend y Frontend, la rama al día y la aprobación de un responsable.
+
+| Comprobación del 9 de noviembre (`0fb9d4a`) | Resultado |
 |---|---|
-| Estado inicial y base | Rama `docs/luis`, árbol limpio, HEAD `0cb87c9`. |
-| Paquetes, entorno, código, pruebas y brief | Revisados en lectura; se encontró el brief completo en los recursos locales del HTML guardado. |
-| `npm.cmd test` en backend | Salida 1: `vitest` no reconocido; sin dependencias instaladas. No se ejecutaron casos. |
-| `npm.cmd test` en frontend | Salida 1: `vitest` no reconocido; sin dependencias instaladas. No se ejecutaron casos. |
-| Instalación, lint, build, Prisma y servidores | No ejecutados; el alcance de escritura se limita a seis documentos. |
-| Cámara, Auth, PostgreSQL y TMDB reales | No verificados; sin uso de credenciales ni conexión a esos servicios. |
-| Playwright, CI remoto y despliegue HTTPS | No verificados; Playwright aún no está configurado. |
-| Revisión documental | Enlaces relativos existentes, bloques de código cerrados, diez variables documentadas y comandos contrastados con los scripts actuales. |
-| Alcance y formato | Solo los seis documentos autorizados modificados, rama `docs/luis`; `git diff --check` sin errores de formato. |
-
-Los resultados antiguos del runner backend sin casos corresponden a una versión anterior y no describen esta base, que ya usa Vitest y contiene pruebas. Después de instalar dependencias en un entorno autorizado, Julio deberá registrar conteos, fallos y evidencias del commit evaluado.
+| `npm test` en backend | 78 pruebas en 9 archivos, todas aprobadas. |
+| `npm test` en frontend | 84 pruebas en 13 archivos, todas aprobadas. |
+| `npm run lint` y `npm run build` en frontend | Sin errores; dos avisos conocidos del lint. |
+| `npm audit --omit=dev` | 0 vulnerabilidades en backend y frontend. |
+| Secretos en el repositorio | Ninguno: solo `.env.example`, y ningún `.env` en el historial. |
+| Auditoría en navegador (axe) | 0 violaciones en siete pantallas, tema claro y oscuro, móvil y escritorio. |
+| CI remoto de `develop` | Backend, Frontend y E2E en verde. |
+| Servicios reales | Login, detección, recomendaciones de TMDB, favoritas persistentes y tablero verificados en la aplicación publicada con HTTPS. |
