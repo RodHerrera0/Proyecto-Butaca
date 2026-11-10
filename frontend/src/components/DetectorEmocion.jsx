@@ -1,0 +1,383 @@
+import { Camera, LoaderCircle, ScanFace, TriangleAlert, User, Users, Video, VideoOff } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  camaraDeStream,
+  elegirCamaraPreferida,
+  guardarCamara,
+  leerCamaraGuardada,
+  listarCamaras,
+} from '../lib/camaras.js'
+import { MAXIMO_PERSONAS, cargarModelos, detectarAnimosGrupo, detectarEmocion } from '../lib/detector.js'
+import { EMOCIONES, MENSAJES_ANIMO, formatearConfianza } from '../lib/emociones.js'
+import { combinarAnimos, mensajeGrupo } from '../lib/grupo.js'
+import ChipAnimo from './ChipAnimo.jsx'
+import './DetectorEmocion.css'
+
+const MENSAJES_ERROR = {
+  permiso:
+    'No diste permiso para usar la cámara. Si cambias de opinión, habilítala en la configuración del navegador y vuelve a intentarlo.',
+  'sin-camara': 'No encontramos una cámara en este dispositivo.',
+  'camara-ocupada': 'La cámara está siendo usada por otra aplicación. Ciérrala y vuelve a intentarlo.',
+  'sin-soporte': 'Este navegador no permite usar la cámara (la página debe abrirse con https o en localhost).',
+  modelos: 'No se pudo cargar el detector de emociones. Revisa tu conexión y vuelve a intentarlo.',
+  'sin-rostro': 'No detectamos un rostro. Busca buena luz, mira de frente a la cámara y vuelve a intentarlo.',
+  analisis: 'Ocurrió un error al analizar la imagen. Vuelve a intentarlo.',
+}
+
+const ETIQUETAS_RESULTADO = {
+  camara: 'Emoción detectada',
+  grupo: 'Ánimo del grupo',
+  manual: 'Ánimo elegido a mano',
+}
+
+function tipoErrorCamara(error) {
+  switch (error?.name) {
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return 'permiso'
+    case 'NotFoundError':
+    case 'OverconstrainedError':
+      return 'sin-camara'
+    case 'NotReadableError':
+    case 'AbortError':
+      return 'camara-ocupada'
+    default:
+      return 'permiso'
+  }
+}
+
+// Sin id, la cámara frontal que dé el navegador; con id, exactamente esa cámara
+function abrirCamara(id) {
+  const video = id ? { deviceId: { exact: id } } : { facingMode: 'user' }
+  return navigator.mediaDevices.getUserMedia({ video, audio: false })
+}
+
+function detenerStream(stream) {
+  stream.getTracks().forEach((track) => track.stop())
+}
+
+// Modo grupo: detecta a todas las personas frente a la cámara y combina sus
+// ánimos en uno solo. Devuelve null si no encontró a nadie.
+async function analizarGrupo(video) {
+  const personas = await detectarAnimosGrupo(video)
+  if (personas.length === 0) return null
+  return { ...combinarAnimos(personas), personas }
+}
+
+// Fases: 'cargando' (modelos y cámara) → 'lista' → 'analizando' → 'terminado' | 'error'
+// Sin `usarCamara` (no se aceptó el consentimiento) la fase es 'manual' y la
+// cámara nunca se enciende.
+export default function DetectorEmocion({ resultado, onResultado, usarCamara = false }) {
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+  // Cada intento de encender la cámara tiene un número; si cambia mientras
+  // esperamos (por ejemplo, el componente se desmontó), se descarta ese stream.
+  const intentoRef = useRef(0)
+  const [fase, setFase] = useState(usarCamara ? 'cargando' : 'manual')
+  const [error, setError] = useState(null)
+  // 'individual' (una sola cara) o 'grupo' (todas las caras del cuadro)
+  const [modo, setModo] = useState('individual')
+  // Cámaras conectadas (solo se conocen después de dar el permiso)
+  const [camaras, setCamaras] = useState([])
+  const [camaraActual, setCamaraActual] = useState(null)
+
+  const apagarCamara = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    if (videoRef.current) videoRef.current.srcObject = null
+  }, [])
+
+  const encenderCamara = useCallback(async (idPedido = null) => {
+    const intento = ++intentoRef.current
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError('sin-soporte')
+      setFase('error')
+      return
+    }
+
+    try {
+      await cargarModelos()
+    } catch {
+      if (intento !== intentoRef.current) return
+      setError('modelos')
+      setFase('error')
+      return
+    }
+    if (intento !== intentoRef.current) return
+
+    // Cámara pedida: la que se eligió en el selector o, si no, la guardada
+    const pedida = idPedido ?? leerCamaraGuardada()
+    let stream
+    try {
+      try {
+        stream = await abrirCamara(pedida)
+      } catch (e) {
+        // La cámara guardada ya no está conectada: se usa la que dé el navegador
+        if (!pedida || idPedido || !['OverconstrainedError', 'NotFoundError'].includes(e?.name)) throw e
+        stream = await abrirCamara(null)
+      }
+    } catch (e) {
+      if (intento !== intentoRef.current) return
+      setError(tipoErrorCamara(e))
+      setFase('error')
+      return
+    }
+    if (intento !== intentoRef.current) {
+      detenerStream(stream)
+      return
+    }
+
+    // Con el permiso ya dado, el navegador muestra los nombres de las cámaras
+    const disponibles = await listarCamaras()
+    if (intento !== intentoRef.current) {
+      detenerStream(stream)
+      return
+    }
+    // Si el navegador abrió la integrada pero hay una webcam externa, se cambia a esa
+    const preferida = elegirCamaraPreferida(disponibles, pedida)
+    if (!idPedido && preferida && preferida !== camaraDeStream(stream)) {
+      try {
+        const otro = await abrirCamara(preferida)
+        detenerStream(stream)
+        stream = otro
+      } catch {
+        // Si no se puede abrir la externa, se sigue con la que ya funciona
+      }
+      if (intento !== intentoRef.current) {
+        detenerStream(stream)
+        return
+      }
+    }
+    setCamaras(disponibles)
+    setCamaraActual(camaraDeStream(stream))
+
+    streamRef.current = stream
+    const video = videoRef.current
+    video.srcObject = stream
+    try {
+      await video.play()
+    } catch {
+      // Algunos navegadores rechazan play() si se interrumpe; el autoPlay lo retoma.
+    }
+    if (intento === intentoRef.current) setFase('lista')
+  }, [])
+
+  useEffect(() => {
+    if (!usarCamara) return
+    encenderCamara()
+    return () => {
+      intentoRef.current++
+      apagarCamara()
+    }
+  }, [usarCamara, encenderCamara, apagarCamara])
+
+  function reintentar() {
+    setError(null)
+    setFase('cargando')
+    encenderCamara()
+  }
+
+  function cambiarCamara(evento) {
+    const id = evento.target.value
+    guardarCamara(id)
+    intentoRef.current++
+    apagarCamara()
+    setCamaraActual(id)
+    setError(null)
+    setFase('cargando')
+    encenderCamara(id)
+  }
+
+  async function analizar() {
+    setFase('analizando')
+    let detectado
+    try {
+      detectado =
+        modo === 'grupo' ? await analizarGrupo(videoRef.current) : await detectarEmocion(videoRef.current)
+    } catch {
+      apagarCamara()
+      setError('analisis')
+      setFase('error')
+      return
+    }
+    // La cámara se apaga apenas termina el análisis, se haya encontrado rostro o no.
+    apagarCamara()
+    if (!detectado) {
+      setError('sin-rostro')
+      setFase('error')
+      return
+    }
+    onResultado({ ...detectado, origen: modo === 'grupo' ? 'grupo' : 'camara' })
+    setFase('terminado')
+  }
+
+  function elegirManual(evento) {
+    const emocion = evento.target.value
+    if (!emocion) return
+    intentoRef.current++
+    apagarCamara()
+    setError(null)
+    setFase(usarCamara ? 'terminado' : 'manual')
+    onResultado({ emocion, confianza: null, origen: 'manual' })
+  }
+
+  const camaraVisible = fase === 'lista' || fase === 'analizando'
+
+  return (
+    <section className="cabina">
+      {usarCamara && (
+        <div className="cabina__modos" role="group" aria-label="¿Quién va a ver?">
+          <button
+            type="button"
+            className="cabina__modo"
+            aria-pressed={modo === 'individual'}
+            onClick={() => setModo('individual')}
+            disabled={fase === 'analizando'}
+          >
+            <User size={18} aria-hidden="true" /> Solo yo
+          </button>
+          <button
+            type="button"
+            className="cabina__modo"
+            data-testid="modo-grupo"
+            aria-pressed={modo === 'grupo'}
+            onClick={() => setModo('grupo')}
+            disabled={fase === 'analizando'}
+          >
+            <Users size={18} aria-hidden="true" /> En grupo
+          </button>
+        </div>
+      )}
+
+      {usarCamara && (
+        <div className="cabina__pantalla" data-fase={fase}>
+          <video
+            ref={videoRef}
+            data-testid="camara-video"
+            className="cabina__video"
+            hidden={!camaraVisible}
+            autoPlay
+            muted
+            playsInline
+          />
+          {!camaraVisible && (
+            <div className="cabina__telon" data-testid={fase === 'cargando' ? 'camara-cargando' : 'camara-apagada'}>
+              {fase === 'cargando' ? (
+                <LoaderCircle className="cabina__girando" size={32} aria-hidden="true" />
+              ) : (
+                <VideoOff size={32} aria-hidden="true" />
+              )}
+              <p>{fase === 'cargando' ? 'Preparando la cámara y el detector…' : 'La cámara está apagada'}</p>
+            </div>
+          )}
+          {fase === 'analizando' && <div className="cabina__escaneo" aria-hidden="true" />}
+          {modo === 'grupo' && camaraVisible && (
+            <p className="cabina__pista">Pónganse todos frente a la cámara (hasta {MAXIMO_PERSONAS} personas)</p>
+          )}
+        </div>
+      )}
+
+      {usarCamara && camaras.length > 1 && (fase === 'cargando' || camaraVisible) && (
+        <label className="cabina__selector-camara">
+          <Video size={18} aria-hidden="true" />
+          <span>Cámara</span>
+          <select
+            data-testid="selector-camara"
+            value={camaraActual ?? ''}
+            onChange={cambiarCamara}
+            disabled={fase !== 'lista'}
+          >
+            {camaraActual === null && <option value="">Cámara del navegador</option>}
+            {camaras.map((camara) => (
+              <option key={camara.id} value={camara.id}>
+                {camara.etiqueta}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {usarCamara && (
+        <div className="cabina__controles">
+          {camaraVisible && (
+            <button
+              type="button"
+              className="boton boton-primario cabina__analizar"
+              data-testid="boton-analizar"
+              onClick={analizar}
+              disabled={fase === 'analizando'}
+            >
+              <ScanFace size={20} aria-hidden="true" />
+              {fase === 'analizando' ? 'Analizando…' : 'Analizar'}
+            </button>
+          )}
+          {(fase === 'terminado' || fase === 'error') && (
+            <button type="button" className="boton boton-secundario" onClick={reintentar}>
+              <Camera size={18} aria-hidden="true" />
+              {fase === 'error' ? 'Intentar de nuevo' : 'Volver a usar la cámara'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p className="cabina__error" role="alert" data-testid="estado-error">
+          <TriangleAlert size={18} aria-hidden="true" />
+          <span>
+            {MENSAJES_ERROR[error]} También puedes elegir tu ánimo a mano.
+          </span>
+        </p>
+      )}
+
+      {resultado && (
+        <div className="cabina__resultado" data-testid="resultado-emocion" role="status">
+          <p className="cabina__resultado-etiqueta">
+            {ETIQUETAS_RESULTADO[resultado.origen]}
+          </p>
+          <ChipAnimo emocion={resultado.emocion} tamano="grande">
+            {resultado.origen === 'camara' && (
+              <span className="cabina__confianza">{formatearConfianza(resultado.confianza)}</span>
+            )}
+            {resultado.origen === 'grupo' && (
+              <span className="cabina__confianza">
+                {resultado.personas.length} {resultado.personas.length === 1 ? 'persona' : 'personas'}
+              </span>
+            )}
+          </ChipAnimo>
+          {resultado.origen === 'grupo' && (
+            <ul className="cabina__personas" aria-label="Ánimo de cada persona">
+              {resultado.personas.map((persona, indice) => (
+                <li key={indice} className="cabina__persona">
+                  <span className="cabina__persona-numero">Persona {indice + 1}</span>
+                  <ChipAnimo emocion={persona.emocion}>
+                    <span className="cabina__confianza">{formatearConfianza(persona.confianza)}</span>
+                  </ChipAnimo>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="cabina__mensaje">
+            {resultado.origen === 'grupo' ? mensajeGrupo(resultado) : MENSAJES_ANIMO[resultado.emocion]}
+          </p>
+        </div>
+      )}
+
+      <label className="cabina__manual">
+        <span>Elegir mi ánimo a mano</span>
+        <select
+          data-testid="selector-animo-manual"
+          value={resultado?.origen === 'manual' ? resultado.emocion : ''}
+          onChange={elegirManual}
+        >
+          <option value="">Selecciona cómo te sientes</option>
+          {Object.entries(EMOCIONES).map(([clave, nombre]) => (
+            <option key={clave} value={clave}>
+              {nombre}
+            </option>
+          ))}
+        </select>
+      </label>
+    </section>
+  )
+}

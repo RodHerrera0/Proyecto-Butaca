@@ -1,0 +1,65 @@
+.app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.app__main {
+  padding-top: var(--alto-header);
+}
+
+@media (max-width: 767px) {
+  .app__main {
+    padding-bottom: calc(var(--alto-bottom-nav) + env(safe-area-inset-bottom));
+  }
+}
+
+.app__saltar {
+  position: fixed;
+  top: var(--espacio-2);
+  left: var(--espacio-2);
+  z-index: calc(var(--capa-menu) + 1);
+  padding: var(--espacio-2) var(--espacio-4);
+  border-radius: var(--radio-md);
+  background: var(--color-dorado);
+  color: var(--color-texto-sobre-dorado);
+  font-weight: var(--peso-medio);
+  transform: translateY(-200%);
+}
+
+.app__saltar:focus-visible {
+  transform: none;
+}
+
+/* Aviso global (por ejemplo, si no se pudo guardar una favorita) */
+.app__aviso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  width: min(100% - 2 * var(--margen-pagina), 640px);
+  margin: var(--espacio-4) auto 0;
+  padding: var(--espacio-3) var(--espacio-4);
+  border: 1px solid color-mix(in srgb, var(--color-error) 45%, transparent);
+  border-radius: var(--radio-md);
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-superficie));
+  position: relative;
+  z-index: 1;
+}
+
+.app__aviso-cerrar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+.app__aviso-cerrar:hover {
+  background: var(--color-velo-2);
+}

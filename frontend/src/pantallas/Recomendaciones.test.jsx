@@ -1,0 +1,90 @@
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { describe, expect, it, vi } from 'vitest'
+import Recomendaciones from './Recomendaciones.jsx'
+
+function renderEn(ruta, props = {}) {
+  return render(
+    <MemoryRouter initialEntries={[ruta]}>
+      <Recomendaciones {...props} />
+    </MemoryRouter>,
+  )
+}
+
+describe('Recomendaciones', () => {
+  it('muestra skeletons mientras carga y luego el destacado y las filas', async () => {
+    renderEn('/recomendaciones')
+    expect(screen.getByRole('status').textContent).toContain('Cargando recomendaciones')
+
+    expect(await screen.findByRole('button', { name: 'Ver detalles' })).toBeTruthy()
+    for (const fila of ['Para tu ánimo de hoy', 'Si estás feliz', 'Para levantar el ánimo', 'Adrenalina pura', 'Para relajarte']) {
+      expect(screen.getByRole('heading', { level: 2, name: fila })).toBeTruthy()
+    }
+  })
+
+  it('filtra por ánimo con los chips y parte del ánimo detectado', async () => {
+    renderEn('/recomendaciones', { animo: { emocion: 'sad', confianza: 0.8, origen: 'camara' } })
+    expect(await screen.findByRole('heading', { name: 'Para tu ánimo de hoy · Triste' })).toBeTruthy()
+
+    const filtros = screen.getByRole('group', { name: 'Filtrar por ánimo' })
+    fireEvent.click(within(filtros).getByRole('button', { name: 'Asco' }))
+    expect(screen.getByRole('heading', { name: 'Para tu ánimo de hoy · Asco' })).toBeTruthy()
+    expect(within(filtros).getByRole('button', { name: 'Asco' }).getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('avisa al marcar un favorito', async () => {
+    const onToggleFavorita = vi.fn()
+    renderEn('/recomendaciones', { onToggleFavorita })
+    fireEvent.click(await screen.findByRole('button', { name: /Agregar a favoritas/ }))
+    expect(onToggleFavorita).toHaveBeenCalledTimes(1)
+  })
+
+  it('muestra un mensaje amable y botón de reintentar si falla', async () => {
+    renderEn('/recomendaciones?simular=error')
+    expect(await screen.findByText('Se nos fue la luz en la sala')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(screen.getByText('Cargando recomendaciones…')).toBeTruthy()
+  })
+
+  it('muestra el estado vacío si no hay títulos', async () => {
+    renderEn('/recomendaciones?simular=vacio')
+    expect(await screen.findByText('La cartelera está vacía por ahora')).toBeTruthy()
+  })
+
+  it('con un grupo resume la función y filtra por el ánimo del grupo', async () => {
+    const animo = {
+      emocion: 'happy',
+      confianza: 0.85,
+      origen: 'grupo',
+      conteo: { happy: 2, sad: 1 },
+      personas: [
+        { emocion: 'happy', confianza: 0.9 },
+        { emocion: 'sad', confianza: 0.7 },
+        { emocion: 'happy', confianza: 0.8 },
+      ],
+      intencion: 'mantener',
+    }
+    renderEn('/recomendaciones', { animo })
+    expect(await screen.findByRole('heading', { name: 'Para ver en grupo · Feliz' })).toBeTruthy()
+    expect(screen.getByTestId('resumen-funcion').textContent).toContain('Función para 3 personas (2 Feliz, 1 Triste)')
+  })
+
+  // Identificadores acordados con QA para las pruebas E2E: no cambiarlos sin avisar.
+  it('mantiene los data-testid de los estados y elementos clave', async () => {
+    const { unmount } = renderEn('/recomendaciones', { onToggleFavorita: vi.fn() })
+    expect(screen.getByTestId('estado-cargando')).toBeTruthy()
+    expect(await screen.findByTestId('destacado')).toBeTruthy()
+    expect(screen.getAllByTestId('poster-card').length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId('boton-favorito').length).toBeGreaterThan(0)
+    expect(screen.getByTestId('filtro-animo-happy')).toBeTruthy()
+    unmount()
+
+    renderEn('/recomendaciones?simular=error')
+    expect(await screen.findByTestId('estado-error')).toBeTruthy()
+  })
+
+  it('marca el estado vacío con su data-testid', async () => {
+    renderEn('/recomendaciones?simular=vacio')
+    expect(await screen.findByTestId('estado-vacio')).toBeTruthy()
+  })
+})
